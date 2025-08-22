@@ -1,4 +1,4 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { HardhatRuntimeEnvironment } from "hardhat/types/index.js";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const deployPrivateDonation: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -76,10 +76,6 @@ const deployPrivateDonation: DeployFunction = async function (hre: HardhatRuntim
     }
   }
 
-  console.log("\nNext Steps:");
-  console.log("1. Update frontend with contract address:", privateDonation.address);
-  console.log("2. Test contract functions");
-  console.log("3. Fund creators and test donations");
 
   return true;
 };

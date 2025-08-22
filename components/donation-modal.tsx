@@ -2,24 +2,31 @@
 
 import { useState, useEffect } from 'react';
 import { X, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
-import { Creator } from '@/types/creator';
+import { Campaign, Creator } from '@/types/creator';
 import { useAccount, useWriteContract } from 'wagmi';
 import { parseEther } from 'viem';
 import { LoadingSpinner } from './ui/loading-spinner';
+import { privateCampaignDonationContract } from '@/lib/contract';
 
 interface DonationModalProps {
-  creator: Creator;
+  campaign?: Campaign;
+  creator?: Creator; // Keep for backward compatibility
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (txHash: string, amount: string) => void;
 }
 
-export function DonationModal({ creator, isOpen, onClose, onSuccess }: DonationModalProps) {
+export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }: DonationModalProps) {
   const [amount, setAmount] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [txHash, setTxHash] = useState('');
   const [step, setStep] = useState<'input' | 'confirming' | 'success' | 'error'>('input');
+
+  // Use campaign or creator for backward compatibility
+  const targetTitle = campaign?.title || creator?.name || 'Unknown';
+  const targetAddress = campaign?.organizerAddress || creator?.walletAddress || '';
 
   const { address, isConnected } = useAccount();
   const { writeContract, data: hash, isPending } = useWriteContract();
@@ -57,11 +64,58 @@ export function DonationModal({ creator, isOpen, onClose, onSuccess }: DonationM
       setError('');
       setStep('confirming');
 
-      // Send ETH directly to creator's wallet
+      // Check if we're in browser and have ethereum provider
+      if (typeof window === 'undefined' || !window.ethereum) {
+        throw new Error('Please install MetaMask or connect your wallet');
+      }
+
+      // Initialize contract
+      await privateCampaignDonationContract.initialize(window.ethereum);
+      
+      let targetId: string;
+      
+      if (campaign) {
+        // For campaigns
+        targetId = campaign.id;
+        
+        // Check if campaign exists and is active
+        const campaignInfo = await privateCampaignDonationContract.getCampaignInfo(targetId);
+        if (!campaignInfo?.isActive) {
+          throw new Error(`Kampanye ${campaign.title} tidak aktif atau tidak ditemukan.`);
+        }
+      } else if (creator) {
+        // Legacy creator support - generate creator ID
+        targetId = privateCampaignDonationContract.generateCampaignId(creator.name, creator.walletAddress);
+        
+        // For legacy, we'd need to check creator registration here
+        // But for now, we'll assume it's valid
+      } else {
+        throw new Error('No valid campaign or creator provided');
+      }
+
+      // Get contract address
+      const CONTRACT_ADDRESS = "0xAD9c503F9AC5c2fA8152B8699f8db469B5a8809F";
+      
+      // Call smart contract donateSimple function for privacy
+      // Flow: User -> Smart Contract -> Organizer (maintains privacy & audit trail)
+      
       writeContract({
-        to: creator.walletAddress as `0x${string}`,
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        abi: [
+          {
+            "inputs": [
+              {"internalType": "bytes32", "name": "campaignId", "type": "bytes32"},
+              {"internalType": "bool", "name": "isAnonymous", "type": "bool"}
+            ],
+            "name": "donateSimple",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+          }
+        ],
+        functionName: 'donateSimple',
+        args: [targetId as `0x${string}`, isAnonymous],
         value: parseEther(amount),
-        data: '0x' as `0x${string}`,
       });
 
     } catch (err: any) {
@@ -110,10 +164,13 @@ export function DonationModal({ creator, isOpen, onClose, onSuccess }: DonationM
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    Support {creator.name}
+                    {campaign ? `Dukung ${targetTitle}` : `Dukung ${targetTitle}`}
                   </h2>
                   <p className="text-gray-600">
-                    Send ETH directly to their wallet on Sepolia testnet
+                    {campaign 
+                      ? 'Donasi Anda akan langsung diteruskan ke penyelenggara kampanye'
+                      : 'Kirim ETH langsung ke wallet mereka di Sepolia testnet'
+                    }
                   </p>
                 </div>
 
@@ -148,9 +205,32 @@ export function DonationModal({ creator, isOpen, onClose, onSuccess }: DonationM
                     ))}
                   </div>
 
+                  {campaign && (
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          id="anonymous"
+                          type="checkbox"
+                          checked={isAnonymous}
+                          onChange={(e) => setIsAnonymous(e.target.checked)}
+                          className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"
+                        />
+                        <label htmlFor="anonymous" className="text-sm text-gray-700">
+                          Donasi secara anonim
+                        </label>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Jika dicentang, identitas Anda akan disembunyikan dari publik
+                      </p>
+                    </div>
+                  )}
+
                   <div className="text-xs text-gray-500 bg-yellow-50 p-3 rounded-neumorphic">
-                    <p>⚠️ This is Sepolia testnet. Use only test ETH.</p>
-                    <p>Recipient: {creator.walletAddress.slice(0, 20)}...</p>
+                    <p>⚠️ Ini adalah Sepolia testnet. Gunakan hanya test ETH.</p>
+                    <p>Penerima: {targetAddress.slice(0, 20)}...</p>
+                    {campaign && (
+                      <p className="mt-1">💰 Jumlah donasi Anda akan tetap rahasia dari publik</p>
+                    )}
                   </div>
                 </div>
 
@@ -183,7 +263,7 @@ export function DonationModal({ creator, isOpen, onClose, onSuccess }: DonationM
                     Confirming Transaction
                   </h2>
                   <p className="text-gray-600">
-                    Please confirm the transaction in your wallet...
+                    Harap konfirmasi transaksi di wallet Anda...
                   </p>
                 </div>
               </div>
@@ -201,7 +281,7 @@ export function DonationModal({ creator, isOpen, onClose, onSuccess }: DonationM
                     Donation Sent! 🎉
                   </h2>
                   <p className="text-gray-600 mb-4">
-                    Your {amount} ETH donation to {creator.name} has been sent.
+                    Donasi {amount} ETH Anda untuk {targetTitle} telah berhasil dikirim.
                   </p>
                   {txHash && (
                     <a

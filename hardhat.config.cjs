@@ -64,6 +64,7 @@ module.exports = {
         runs: 800,
       },
       evmVersion: "cancun",
+      viaIR: true, // Enable IR compilation to fix "Stack too deep" errors
     },
   },
 };

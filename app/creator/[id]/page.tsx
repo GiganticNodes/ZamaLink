@@ -7,7 +7,7 @@ import { BackgroundEffects } from '@/components/background-effects';
 import { DonationModal } from '@/components/donation-modal';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Creator, Donation } from '@/types/creator';
-import { creatorStorage, donationStorage } from '@/lib/storage';
+import { privateCampaignDonationContract } from '@/lib/contract';
 import { 
   Twitter, 
   Youtube, 
@@ -20,54 +20,71 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
-export default function CreatorProfilePage() {
+export default function CreatorPage() {
   const params = useParams();
   const creatorId = params.id as string;
   
   const [creator, setCreator] = useState<Creator | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [recentDonations, setRecentDonations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDonationModal, setShowDonationModal] = useState(false);
 
   useEffect(() => {
     if (creatorId) {
-      const foundCreator = creatorStorage.getById(creatorId);
-      setCreator(foundCreator);
+      const loadCreator = async () => {
+        try {
+          if (typeof window !== 'undefined' && window.ethereum) {
+            await privateCampaignDonationContract.initialize(window.ethereum);
+            
+            // Legacy creator page - show placeholder data
+            const formattedCreator: Creator = {
+              id: creatorId,
+              name: 'Legacy Creator',
+              walletAddress: '0x0000000000000000000000000000000000000000',
+              description: 'This is a legacy creator profile. New features are available in campaign pages.'
+            };
+            
+            setCreator(formattedCreator);
+            setDonations([]);
+          } else {
+            setCreator(null); // No wallet or SSR
+          }
+        } catch (error) {
+          console.error('Failed to load creator:', error);
+          setCreator(null);
+        } finally {
+          setLoading(false);
+        }
+      };
       
-      if (foundCreator) {
-        const creatorDonations = donationStorage.getByCreator(creatorId);
-        setDonations(creatorDonations);
-      }
-      
-      setLoading(false);
+      loadCreator();
     }
   }, [creatorId]);
 
   const handleDonationSuccess = (txHash: string, amount: string) => {
     if (!creator) return;
 
-    // Create new donation record
+    // Create new donation record for display
     const newDonation: Donation = {
       id: Date.now().toString(),
-      creatorId: creator.id,
-      donorAddress: 'donor-address', // Would get from wallet
-      amount,
+      campaignId: creator.id,
+      donorAddress: 'donor-address',
+      amount: 'Dirahasiakan',
       transactionHash: txHash,
       timestamp: new Date(),
-      status: 'confirmed'
+      status: 'confirmed',
+      isAnonymous: false
     };
 
-    // Save donation
-    donationStorage.save(newDonation);
-
-    // Update creator stats
+    // Note: Donation is now handled by blockchain contract
+    // Update local display state only
     const updatedCreator: Creator = {
       ...creator,
       totalDonations: (parseFloat(creator.totalDonations || '0') + parseFloat(amount)).toString(),
       donationCount: (creator.donationCount || 0) + 1,
     };
 
-    creatorStorage.save(updatedCreator);
     setCreator(updatedCreator);
     setDonations(prev => [newDonation, ...prev]);
   };
@@ -137,21 +154,13 @@ export default function CreatorProfilePage() {
               {/* Avatar */}
               <div className="relative">
                 <div className="w-32 h-32 rounded-full overflow-hidden shadow-neumorphic">
-                  {creator.avatar ? (
-                    <Image
-                      src={creator.avatar}
-                      alt={creator.name}
-                      width={128}
-                      height={128}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center">
-                      <span className="text-white font-bold text-4xl">
-                        {creator.name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
+                  <Image 
+                    src="/profile-picture.jpg" 
+                    alt="Profile Picture" 
+                    width={128} 
+                    height={128} 
+                    className="object-cover"
+                  />
                 </div>
                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-400 rounded-full border-4 border-white shadow-sm" />
               </div>
@@ -177,44 +186,13 @@ export default function CreatorProfilePage() {
 
                 {/* Social Links */}
                 <div className="flex justify-center md:justify-start space-x-4 mb-6">
-                  {creator.twitterHandle && (
-                    <a
-                      href={`https://twitter.com/${creator.twitterHandle}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3 bg-blue-100 hover:bg-blue-200 rounded-neumorphic transition-colors"
-                    >
-                      <Twitter className="w-5 h-5 text-blue-500" />
-                    </a>
-                  )}
-                  
-                  {creator.farcasterUsername && (
-                    <a
-                      href={`https://farcaster.xyz/${creator.farcasterUsername}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3 bg-purple-100 hover:bg-purple-200 rounded-neumorphic transition-colors"
-                    >
-                      <ExternalLink className="w-5 h-5 text-purple-500" />
-                    </a>
-                  )}
-                  
-                  {creator.youtubeChannel && (
-                    <a
-                      href={`https://youtube.com/channel/${creator.youtubeChannel}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3 bg-red-100 hover:bg-red-200 rounded-neumorphic transition-colors"
-                    >
-                      <Youtube className="w-5 h-5 text-red-500" />
-                    </a>
-                  )}
+                  {/* Social links disabled for legacy creator pages */}
                 </div>
 
                 {/* Join Date */}
                 <div className="flex items-center justify-center md:justify-start space-x-2 text-sm text-gray-500">
                   <Calendar className="w-4 h-4" />
-                  <span>Joined {formatDate(creator.createdAt)}</span>
+                  <span>Joined {creator.createdAt ? formatDate(creator.createdAt) : 'Recently'}</span>
                 </div>
               </div>
 
@@ -238,7 +216,7 @@ export default function CreatorProfilePage() {
                 <TrendingUp className="w-6 h-6 text-green-500" />
               </div>
               <p className="text-2xl font-bold text-gray-800 mb-1">
-                {parseFloat(creator.totalDonations || '0').toFixed(3)}
+                0.0000 ETH
               </p>
               <p className="text-sm text-gray-600">Total ETH Received</p>
             </div>
@@ -248,7 +226,7 @@ export default function CreatorProfilePage() {
                 <Users className="w-6 h-6 text-blue-500" />
               </div>
               <p className="text-2xl font-bold text-gray-800 mb-1">
-                {creator.donationCount || 0}
+                0
               </p>
               <p className="text-sm text-gray-600">Total Supporters</p>
             </div>
@@ -258,7 +236,7 @@ export default function CreatorProfilePage() {
                 <Heart className="w-6 h-6 text-orange-500" />
               </div>
               <p className="text-2xl font-bold text-gray-800 mb-1">
-                {donations.length > 0 ? (parseFloat(creator.totalDonations || '0') / donations.length).toFixed(3) : '0.000'}
+                0.0000 ETH
               </p>
               <p className="text-sm text-gray-600">Avg Donation (ETH)</p>
             </div>
@@ -268,7 +246,7 @@ export default function CreatorProfilePage() {
           <div className="neumorphic-card p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Recent Support</h2>
             
-            {donations.length === 0 ? (
+            {recentDonations.length === 0 ? (
               <div className="text-center py-12">
                 <Heart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">
@@ -280,9 +258,9 @@ export default function CreatorProfilePage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {donations.slice(0, 5).map((donation, index) => (
+                {recentDonations.map((recentDonation, index) => (
                   <div
-                    key={donation.id}
+                    key={`${recentDonation.donor}-${recentDonation.timestamp}`}
                     className="flex items-center justify-between p-4 bg-gray-50/50 rounded-neumorphic"
                   >
                     <div className="flex items-center space-x-4">
@@ -291,21 +269,19 @@ export default function CreatorProfilePage() {
                       </div>
                       <div>
                         <p className="font-semibold text-gray-800">
-                          {donation.amount} ETH
+                          Anonymous Supporter
                         </p>
                         <p className="text-sm text-gray-600">
-                          {formatDate(donation.timestamp)}
+                          {recentDonation.timeAgo}
                         </p>
                       </div>
                     </div>
-                    <a
-                      href={`https://sepolia.etherscan.io/tx/${donation.transactionHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-orange-400 hover:text-orange-500 transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                    <div className="flex items-center space-x-2">
+                      <Wallet className="w-4 h-4 text-gray-400" />
+                      <span className="text-xs text-gray-500 font-mono">
+                        {`${recentDonation.donor.slice(0, 6)}...${recentDonation.donor.slice(-4)}`}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>

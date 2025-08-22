@@ -10,7 +10,7 @@ import { Header } from '@/components/header';
 import { BackgroundEffects } from '@/components/background-effects';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { CreatorFormData, Creator } from '@/types/creator';
-import { creatorStorage } from '@/lib/storage';
+import { privateDonationContract } from '@/lib/contract';
 import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 
 const formSchema = z.object({
@@ -45,40 +45,52 @@ export default function RegisterPage() {
       return;
     }
 
-    // Check if creator already exists
-    const existingCreator = creatorStorage.getByWallet(address);
-    if (existingCreator) {
-      setErrorMessage('A creator profile already exists for this wallet address');
-      setSubmitStatus('error');
-      return;
-    }
-
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     try {
-      const newCreator: Creator = {
-        id: Date.now().toString(),
-        name: data.name,
-        walletAddress: address,
-        twitterHandle: data.twitterHandle || undefined,
-        farcasterUsername: data.farcasterUsername || undefined,
-        youtubeChannel: data.youtubeChannel || undefined,
-        description: data.description || undefined,
-        totalDonations: '0',
-        donationCount: 0,
-        createdAt: new Date(),
-      };
+      // Check if we're in browser and have ethereum provider
+      if (typeof window === 'undefined' || !window.ethereum) {
+        throw new Error('Please install MetaMask or connect your wallet');
+      }
 
-      creatorStorage.save(newCreator);
+      // Initialize contract with current provider
+      await privateDonationContract.initialize(window.ethereum);
+
+      // Check if creator already exists on blockchain
+      const existingCreator = await privateDonationContract.getCreatorByWallet(address);
+      if (existingCreator?.isRegistered) {
+        setErrorMessage('A creator profile already exists for this wallet address');
+        setSubmitStatus('error');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Register creator on blockchain
+      const result = await privateDonationContract.registerCreator(
+        data.name,
+        data.description || '',
+        address
+      );
+
+      if (!result.success) {
+        throw new Error(result.error || 'Registration failed');
+      }
+
       setSubmitStatus('success');
       
-      // Instant redirect ke creator profile
-      router.push(`/creator/${newCreator.id}`);
+      // Generate creator ID for redirect
+      const creatorId = privateDonationContract.generateCreatorId(address);
+      
+      // Small delay to ensure blockchain state is updated
+      setTimeout(() => {
+        router.push(`/creator/${creatorId}`);
+      }, 2000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration failed:', error);
-      setErrorMessage('Registration failed. Please try again.');
+      const errorMsg = error?.message || error?.toString() || 'Registration failed. Please try again.';
+      setErrorMessage(errorMsg);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

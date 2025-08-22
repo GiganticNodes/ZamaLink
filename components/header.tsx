@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Coins, Users, UserPlus } from 'lucide-react';
+import { Coins, Heart, Plus, BarChart3 } from 'lucide-react';
 
 export function Header() {
   const pathname = usePathname();
@@ -36,14 +36,20 @@ export function Header() {
             <nav className="flex items-center space-x-2">
               <Link href="/">
                 <div className={getNavLinkClass('/')}>
-                  <Users className="w-4 h-4" />
-                  <span className="hidden sm:inline">Creators</span>
+                  <Heart className="w-4 h-4" />
+                  <span className="hidden sm:inline">Campaigns</span>
                 </div>
               </Link>
-              <Link href="/register">
-                <div className={getNavLinkClass('/register')}>
-                  <UserPlus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Register</span>
+              <Link href="/create-campaign">
+                <div className={getNavLinkClass('/create-campaign')}>
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Create Campaign</span>
+                </div>
+              </Link>
+              <Link href="/dashboard">
+                <div className={getNavLinkClass('/dashboard')}>
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
                 </div>
               </Link>
             </nav>

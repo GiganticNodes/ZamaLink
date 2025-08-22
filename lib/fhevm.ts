@@ -108,7 +108,7 @@ export class FHEVMClient {
           isRegistered: info[3]
         });
       } catch (error) {
-        console.error('Error fetching creator info:', error);
+        console.error('Error fetching creator info:', error instanceof Error ? error.message : String(error));
       }
     }
     

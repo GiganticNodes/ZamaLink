@@ -1,7 +1,7 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  console.log("=== Deploying PrivateDonation Contract ===");
+  console.log("=== Deploying PrivateCampaignDonation Contract ===");
   
   // Get deployer account
   const [deployer] = await ethers.getSigners();
@@ -32,11 +32,11 @@ async function main() {
     }
   });
 
-  console.log("\n🚀 Deploying PrivateDonation contract...");
+  console.log("\nDeploying PrivateCampaignDonation contract...");
 
   // Deploy contract  
-  const PrivateDonation = await ethers.getContractFactory("PrivateDonation");
-  const privateDonation = await PrivateDonation.deploy({
+  const PrivateCampaignDonation = await ethers.getContractFactory("PrivateCampaignDonation");
+  const privateDonation = await PrivateCampaignDonation.deploy({
     gasLimit: 6000000
   });
 
@@ -44,9 +44,9 @@ async function main() {
   await privateDonation.waitForDeployment();
   const contractAddress = await privateDonation.getAddress();
 
-  console.log("\n✅ Deployment Complete!");
-  console.log(`📄 Contract Address: ${contractAddress}`);
-  console.log(`🔗 Transaction Hash: ${privateDonation.deploymentTransaction().hash}`);
+  console.log("\nDeployment Complete!");
+  console.log(`Contract Address: ${contractAddress}`);
+  console.log(`Transaction Hash: ${privateDonation.deploymentTransaction().hash}`);
   
   // Save contract address info
   const contractInfo = {
@@ -57,23 +57,19 @@ async function main() {
     fhevmAddresses: FHEVM_ADDRESSES
   };
 
-  console.log("\n📋 Contract Info:");
+  console.log("\nContract Info:");
   console.log(JSON.stringify(contractInfo, null, 2));
 
-  console.log("\n📋 Next Steps:");
-  console.log("1. Update frontend with contract address:", contractAddress);
-  console.log("2. Test contract functions");
-  console.log("3. Fund creators and test donations");
 
   return contractAddress;
 }
 
 main()
   .then((address) => {
-    console.log(`\n🎉 Contract deployed successfully at: ${address}`);
+    console.log(`\nContract deployed successfully at: ${address}`);
     process.exit(0);
   })
   .catch((error) => {
-    console.error("❌ Deployment failed:", error);
+    console.error("Deployment failed:", error);
     process.exit(1);
   });
