@@ -1,0 +1,38 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/SimpleCampaignVault.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\n/**\n * @title SimpleCampaignVault  \n * @notice Simplified campaign vault without FHE for testing\n * @dev Basic campaign creation without encryption features\n */\n\ncontract SimpleCampaignVault {\n    struct Campaign {\n        address creator;\n        uint256 total; // Plain uint256 instead of encrypted\n        bool exists;\n    }\n\n    mapping(bytes32 => Campaign) private _campaigns;\n    uint256 private _entered;\n\n    event CampaignCreated(bytes32 indexed campaignId, address indexed creator);\n    event DonationRecorded(bytes32 indexed campaignId, address indexed donor, uint256 amount);\n\n    modifier nonReentrant() {\n        require(_entered == 0, \"REENTRANCY\");\n        _entered = 1;\n        _;\n        _entered = 0;\n    }\n\n    modifier onlyExisting(bytes32 campaignId) {\n        require(_campaigns[campaignId].exists, \"CAMPAIGN_NOT_FOUND\");\n        _;\n    }\n\n    /**\n     * @notice Creates a new campaign (simplified version)\n     * @param campaignId Unique identifier for the campaign\n     * @param creator Address of the campaign creator\n     */\n    function createCampaign(bytes32 campaignId, address creator) external nonReentrant {\n        require(!_campaigns[campaignId].exists, \"CAMPAIGN_EXISTS\");\n        require(creator != address(0), \"CREATOR_ZERO\");\n\n        _campaigns[campaignId] = Campaign({\n            creator: creator,\n            total: 0, // Initialize to 0 (plain number)\n            exists: true\n        });\n\n        emit CampaignCreated(campaignId, creator);\n    }\n\n    /**\n     * @notice Simple donation function for testing\n     */\n    function donate(bytes32 campaignId) external payable nonReentrant onlyExisting(campaignId) {\n        require(msg.value > 0, \"ZERO_AMOUNT\");\n        \n        _campaigns[campaignId].total += msg.value;\n        emit DonationRecorded(campaignId, msg.sender, msg.value);\n    }\n\n    /**\n     * @notice Get campaign total (for testing)\n     */\n    function getCampaignTotal(bytes32 campaignId) external view onlyExisting(campaignId) returns (uint256) {\n        return _campaigns[campaignId].total;\n    }\n\n    /**\n     * @notice Check if campaign exists\n     */\n    function campaignExists(bytes32 campaignId) external view returns (bool) {\n        return _campaigns[campaignId].exists;\n    }\n\n    /**\n     * @notice Get campaign creator\n     */\n    function getCampaignCreator(bytes32 campaignId) external view onlyExisting(campaignId) returns (address) {\n        return _campaigns[campaignId].creator;\n    }\n}\n"
+    }
+  },
+  "settings": {
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 800
+    },
+    "evmVersion": "cancun",
+    "viaIR": true,
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    }
+  }
+}

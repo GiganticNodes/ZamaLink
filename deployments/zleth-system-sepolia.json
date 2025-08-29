@@ -1,0 +1,26 @@
+{
+  "network": "sepolia",
+  "timestamp": "2025-08-29T17:41:12.424Z",
+  "deployer": "0x0f08aB4cf8E01bd5A48444239a452FeA24eccba4",
+  "contracts": {
+    "ZLETHWrapper": {
+      "address": "0xC92A0100589Baace55eE5724733824703c152d0B",
+      "name": "Zama Link ETH",
+      "symbol": "ZLETH",
+      "decimals": 9,
+      "rate": "1000000000"
+    },
+    "ZamaLinkCampaign": {
+      "address": "0xE004EB22a1a6864d32664039a7325056ae15Be1c",
+      "zlethWrapper": "0xC92A0100589Baace55eE5724733824703c152d0B"
+    }
+  },
+  "deployment": {
+    "blockNumber": 9090763,
+    "gasUsed": "estimated",
+    "transactionHashes": {
+      "zlethWrapper": "deployed",
+      "campaign": "deployed"
+    }
+  }
+}

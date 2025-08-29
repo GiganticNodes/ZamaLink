@@ -1,0 +1,275 @@
+{
+  "address": "0x3dCbf5f68170Fef7F92e5018AA18f18A2A9d5f4A",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        }
+      ],
+      "name": "CampaignCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "DonationRecorded",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "campaignExists",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        }
+      ],
+      "name": "createCampaign",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "donate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getCampaignCreator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getCampaignTotal",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xc893c7888e841fb4207bb38cbd76190dd9d082d72422fda49c902c13df8d3e35",
+  "receipt": {
+    "to": null,
+    "from": "0x0f08aB4cf8E01bd5A48444239a452FeA24eccba4",
+    "contractAddress": "0x3dCbf5f68170Fef7F92e5018AA18f18A2A9d5f4A",
+    "transactionIndex": 51,
+    "gasUsed": "287483",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x29e73ddc4705a3ac21e8268a778cd79b9848c82406982051c135d05140ef749f",
+    "transactionHash": "0xc893c7888e841fb4207bb38cbd76190dd9d082d72422fda49c902c13df8d3e35",
+    "logs": [],
+    "blockNumber": 9084293,
+    "cumulativeGasUsed": "9360271",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "1eb7835a319c238bcfd4f8f315953512",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"campaignId\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"}],\"name\":\"CampaignCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"campaignId\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"donor\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"DonationRecorded\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"campaignId\",\"type\":\"bytes32\"}],\"name\":\"campaignExists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"campaignId\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"}],\"name\":\"createCampaign\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"campaignId\",\"type\":\"bytes32\"}],\"name\":\"donate\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"campaignId\",\"type\":\"bytes32\"}],\"name\":\"getCampaignCreator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"campaignId\",\"type\":\"bytes32\"}],\"name\":\"getCampaignTotal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Basic campaign creation without encryption features\",\"kind\":\"dev\",\"methods\":{\"createCampaign(bytes32,address)\":{\"params\":{\"campaignId\":\"Unique identifier for the campaign\",\"creator\":\"Address of the campaign creator\"}}},\"title\":\"SimpleCampaignVault  \",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"campaignExists(bytes32)\":{\"notice\":\"Check if campaign exists\"},\"createCampaign(bytes32,address)\":{\"notice\":\"Creates a new campaign (simplified version)\"},\"donate(bytes32)\":{\"notice\":\"Simple donation function for testing\"},\"getCampaignCreator(bytes32)\":{\"notice\":\"Get campaign creator\"},\"getCampaignTotal(bytes32)\":{\"notice\":\"Get campaign total (for testing)\"}},\"notice\":\"Simplified campaign vault without FHE for testing\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/SimpleCampaignVault.sol\":\"SimpleCampaignVault\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[],\"viaIR\":true},\"sources\":{\"contracts/SimpleCampaignVault.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.24;\\n\\n/**\\n * @title SimpleCampaignVault  \\n * @notice Simplified campaign vault without FHE for testing\\n * @dev Basic campaign creation without encryption features\\n */\\n\\ncontract SimpleCampaignVault {\\n    struct Campaign {\\n        address creator;\\n        uint256 total; // Plain uint256 instead of encrypted\\n        bool exists;\\n    }\\n\\n    mapping(bytes32 => Campaign) private _campaigns;\\n    uint256 private _entered;\\n\\n    event CampaignCreated(bytes32 indexed campaignId, address indexed creator);\\n    event DonationRecorded(bytes32 indexed campaignId, address indexed donor, uint256 amount);\\n\\n    modifier nonReentrant() {\\n        require(_entered == 0, \\\"REENTRANCY\\\");\\n        _entered = 1;\\n        _;\\n        _entered = 0;\\n    }\\n\\n    modifier onlyExisting(bytes32 campaignId) {\\n        require(_campaigns[campaignId].exists, \\\"CAMPAIGN_NOT_FOUND\\\");\\n        _;\\n    }\\n\\n    /**\\n     * @notice Creates a new campaign (simplified version)\\n     * @param campaignId Unique identifier for the campaign\\n     * @param creator Address of the campaign creator\\n     */\\n    function createCampaign(bytes32 campaignId, address creator) external nonReentrant {\\n        require(!_campaigns[campaignId].exists, \\\"CAMPAIGN_EXISTS\\\");\\n        require(creator != address(0), \\\"CREATOR_ZERO\\\");\\n\\n        _campaigns[campaignId] = Campaign({\\n            creator: creator,\\n            total: 0, // Initialize to 0 (plain number)\\n            exists: true\\n        });\\n\\n        emit CampaignCreated(campaignId, creator);\\n    }\\n\\n    /**\\n     * @notice Simple donation function for testing\\n     */\\n    function donate(bytes32 campaignId) external payable nonReentrant onlyExisting(campaignId) {\\n        require(msg.value > 0, \\\"ZERO_AMOUNT\\\");\\n        \\n        _campaigns[campaignId].total += msg.value;\\n        emit DonationRecorded(campaignId, msg.sender, msg.value);\\n    }\\n\\n    /**\\n     * @notice Get campaign total (for testing)\\n     */\\n    function getCampaignTotal(bytes32 campaignId) external view onlyExisting(campaignId) returns (uint256) {\\n        return _campaigns[campaignId].total;\\n    }\\n\\n    /**\\n     * @notice Check if campaign exists\\n     */\\n    function campaignExists(bytes32 campaignId) external view returns (bool) {\\n        return _campaigns[campaignId].exists;\\n    }\\n\\n    /**\\n     * @notice Get campaign creator\\n     */\\n    function getCampaignCreator(bytes32 campaignId) external view onlyExisting(campaignId) returns (address) {\\n        return _campaigns[campaignId].creator;\\n    }\\n}\\n\",\"keccak256\":\"0xc1c2478c40b2d1c7229b5205fa5f158f1651d62de9c6a9b8fe7df104208120e3\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6080806040523461001657610441908161001b8239f35b5f80fdfe60406080815260049081361015610014575f80fd5b5f3560e01c806334bb4728146103485780634b7a387a146101a65780635017446814610165578063b777edcf146101375763c37067fa14610053575f80fd5b60203660031901126101335781359161006e600154156103e8565b60018055825f525f60205261008b60ff6002845f2001541661039c565b34156100f157825f525f6020526001825f20018054913483018093116100de57505551903482527fed614062c7798453f5a62abe99a2678a5ade2b3dfb4c47c6acd70b65f4a57a9460203393a35f600155005b601190634e487b7160e01b5f525260245ffd5b6020606492519162461bcd60e51b8352820152600b60248201527f5a45524f5f414d4f554e540000000000000000000000000000000000000000006044820152fd5b5f80fd5b503461013357602036600319011261013357602091355f525f825260ff6002825f2001541690519015158152f35b50346101335760203660031901126101335760209135805f525f835261019360ff6002845f2001541661039c565b5f525f82526001815f2001549051908152f35b503461013357806003193601126101335781356024359073ffffffffffffffffffffffffffffffffffffffff92838316809303610133576001936101eb8554156103e8565b848055825f525f60205260ff6002835f200154166103055783156102c257815195606087019087821067ffffffffffffffff8311176102af5750956002915f978452858252602082019088825284830194888652868a528960205289209251167fffffffffffffffffffffffff00000000000000000000000000000000000000008354161782555186820155019051151560ff801983541691161790557f56419e16617c73fd93c78ff2bdc4b1dc1dae51571a63e868c6fdab1e9b244f328480a355005b604190634e487b7160e01b5f525260245ffd5b815162461bcd60e51b8152602081880152600c60248201527f43524541544f525f5a45524f00000000000000000000000000000000000000006044820152606490fd5b815162461bcd60e51b8152602081880152600f60248201527f43414d504149474e5f45584953545300000000000000000000000000000000006044820152606490fd5b50346101335760203660031901126101335760209135805f525f835261037660ff6002845f2001541661039c565b5f525f825273ffffffffffffffffffffffffffffffffffffffff815f2054169051908152f35b156103a357565b60405162461bcd60e51b815260206004820152601260248201527f43414d504149474e5f4e4f545f464f554e4400000000000000000000000000006044820152606490fd5b156103ef57565b60405162461bcd60e51b815260206004820152600a60248201527f5245454e5452414e4359000000000000000000000000000000000000000000006044820152606490fdfea164736f6c6343000818000a",
+  "deployedBytecode": "0x60406080815260049081361015610014575f80fd5b5f3560e01c806334bb4728146103485780634b7a387a146101a65780635017446814610165578063b777edcf146101375763c37067fa14610053575f80fd5b60203660031901126101335781359161006e600154156103e8565b60018055825f525f60205261008b60ff6002845f2001541661039c565b34156100f157825f525f6020526001825f20018054913483018093116100de57505551903482527fed614062c7798453f5a62abe99a2678a5ade2b3dfb4c47c6acd70b65f4a57a9460203393a35f600155005b601190634e487b7160e01b5f525260245ffd5b6020606492519162461bcd60e51b8352820152600b60248201527f5a45524f5f414d4f554e540000000000000000000000000000000000000000006044820152fd5b5f80fd5b503461013357602036600319011261013357602091355f525f825260ff6002825f2001541690519015158152f35b50346101335760203660031901126101335760209135805f525f835261019360ff6002845f2001541661039c565b5f525f82526001815f2001549051908152f35b503461013357806003193601126101335781356024359073ffffffffffffffffffffffffffffffffffffffff92838316809303610133576001936101eb8554156103e8565b848055825f525f60205260ff6002835f200154166103055783156102c257815195606087019087821067ffffffffffffffff8311176102af5750956002915f978452858252602082019088825284830194888652868a528960205289209251167fffffffffffffffffffffffff00000000000000000000000000000000000000008354161782555186820155019051151560ff801983541691161790557f56419e16617c73fd93c78ff2bdc4b1dc1dae51571a63e868c6fdab1e9b244f328480a355005b604190634e487b7160e01b5f525260245ffd5b815162461bcd60e51b8152602081880152600c60248201527f43524541544f525f5a45524f00000000000000000000000000000000000000006044820152606490fd5b815162461bcd60e51b8152602081880152600f60248201527f43414d504149474e5f45584953545300000000000000000000000000000000006044820152606490fd5b50346101335760203660031901126101335760209135805f525f835261037660ff6002845f2001541661039c565b5f525f825273ffffffffffffffffffffffffffffffffffffffff815f2054169051908152f35b156103a357565b60405162461bcd60e51b815260206004820152601260248201527f43414d504149474e5f4e4f545f464f554e4400000000000000000000000000006044820152606490fd5b156103ef57565b60405162461bcd60e51b815260206004820152600a60248201527f5245454e5452414e4359000000000000000000000000000000000000000000006044820152606490fdfea164736f6c6343000818000a",
+  "devdoc": {
+    "details": "Basic campaign creation without encryption features",
+    "kind": "dev",
+    "methods": {
+      "createCampaign(bytes32,address)": {
+        "params": {
+          "campaignId": "Unique identifier for the campaign",
+          "creator": "Address of the campaign creator"
+        }
+      }
+    },
+    "title": "SimpleCampaignVault  ",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "campaignExists(bytes32)": {
+        "notice": "Check if campaign exists"
+      },
+      "createCampaign(bytes32,address)": {
+        "notice": "Creates a new campaign (simplified version)"
+      },
+      "donate(bytes32)": {
+        "notice": "Simple donation function for testing"
+      },
+      "getCampaignCreator(bytes32)": {
+        "notice": "Get campaign creator"
+      },
+      "getCampaignTotal(bytes32)": {
+        "notice": "Get campaign total (for testing)"
+      }
+    },
+    "notice": "Simplified campaign vault without FHE for testing",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 14,
+        "contract": "contracts/SimpleCampaignVault.sol:SimpleCampaignVault",
+        "label": "_campaigns",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_bytes32,t_struct(Campaign)9_storage)"
+      },
+      {
+        "astId": 16,
+        "contract": "contracts/SimpleCampaignVault.sol:SimpleCampaignVault",
+        "label": "_entered",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_bytes32,t_struct(Campaign)9_storage)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => struct SimpleCampaignVault.Campaign)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Campaign)9_storage"
+      },
+      "t_struct(Campaign)9_storage": {
+        "encoding": "inplace",
+        "label": "struct SimpleCampaignVault.Campaign",
+        "members": [
+          {
+            "astId": 4,
+            "contract": "contracts/SimpleCampaignVault.sol:SimpleCampaignVault",
+            "label": "creator",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 6,
+            "contract": "contracts/SimpleCampaignVault.sol:SimpleCampaignVault",
+            "label": "total",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 8,
+            "contract": "contracts/SimpleCampaignVault.sol:SimpleCampaignVault",
+            "label": "exists",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bool"
+          }
+        ],
+        "numberOfBytes": "96"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

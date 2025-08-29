@@ -1,0 +1,21 @@
+{
+  "network": "sepolia",
+  "deployer": "0x0f08aB4cf8E01bd5A48444239a452FeA24eccba4",
+  "timestamp": "2025-08-28T20:51:26.483Z",
+  "contracts": {
+    "ZLETHWrapper": {
+      "address": "0x53806fD23E073171D32Cb610777cacac1AB6ccE2",
+      "constructorArgs": [
+        "0x0000000000000000000000000000000000000042"
+      ]
+    },
+    "CampaignVault": {
+      "address": "0xc5E79B5472167af7836864C820036D8A7c474cB5",
+      "constructorArgs": [
+        "0x53806fD23E073171D32Cb610777cacac1AB6ccE2",
+        "0x0000000000000000000000000000000000000042"
+      ]
+    }
+  },
+  "oracle": "0x0000000000000000000000000000000000000042"
+}

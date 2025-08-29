@@ -1,0 +1,43 @@
+{
+  "network": "sepolia",
+  "timestamp": "2025-08-29T14:02:04.799Z",
+  "deployer": "0x0f08aB4cf8E01bd5A48444239a452FeA24eccba4",
+  "blockNumber": 9089681,
+  "contracts": {
+    "ZLETHWrapper": {
+      "address": "0x31CcAD3742Bd88AA445276A926FFf8BB7D6d2aB3",
+      "constructorArgs": [
+        "0x0000000000000000000000000000000000000000"
+      ],
+      "features": [
+        "Confidential ETH wrapping",
+        "Private balance tracking",
+        "Auto unwrap mechanism",
+        "Campaign integration"
+      ]
+    },
+    "CampaignVault": {
+      "address": "0xD0927AC2D3aFb03a3133DBc6209E29332f5bA52D",
+      "constructorArgs": [
+        "0x31CcAD3742Bd88AA445276A926FFf8BB7D6d2aB3"
+      ],
+      "features": [
+        "Private donation tracking",
+        "Campaign management",
+        "Encrypted total calculations",
+        "Secure fund claiming"
+      ]
+    }
+  },
+  "configuration": {
+    "rate": "1000000000",
+    "network": "sepolia"
+  },
+  "workflow": {
+    "step1": "Organization creates campaign → registered in CampaignVault",
+    "step2": "User donates ETH → auto-wrapped to private ZLETH",
+    "step3": "Donations accumulated privately using FHEVM",
+    "step4": "Creator claims → ZLETH auto-unwrapped to ETH",
+    "step5": "All amounts remain private until claim"
+  }
+}
