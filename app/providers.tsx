@@ -16,13 +16,20 @@ const { wallets } = getDefaultWallets();
 
 const config = getDefaultConfig({
   appName: 'ZamaLink',
-  projectId: 'YOUR_WALLET_CONNECT_PROJECT_ID', // Replace with your actual project ID
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8',
   wallets,
   chains: [sepolia],
   ssr: true,
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+});
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (

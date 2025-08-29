@@ -6,7 +6,8 @@ import { BackgroundEffects } from '@/components/background-effects';
 import { CampaignCard } from '@/components/campaign-card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Campaign, CampaignCategory } from '@/types/creator';
-import { privateCampaignDonationContract } from '@/lib/contract';
+import { zlethCampaignContract } from '@/lib/zleth-contract';
+import { clearLegacyData } from '@/lib/storage';
 import { Users, Heart, Zap, Calendar, Target } from 'lucide-react';
 
 export default function Home() {
@@ -17,6 +18,8 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
+    // Clear any legacy campaign data on app startup
+    clearLegacyData();
   }, []);
 
   useEffect(() => {
@@ -24,35 +27,38 @@ export default function Home() {
     
     const loadCampaigns = async () => {
       try {
-        // Check if we're in browser and have ethereum provider
+        // Try to initialize ZLETH contract system - with or without wallet
         if (typeof window !== 'undefined' && window.ethereum) {
-          await privateCampaignDonationContract.initialize(window.ethereum);
-          const contractCampaigns = await privateCampaignDonationContract.getActiveCampaigns();
-          
-          // Convert contract campaigns to Campaign type format
-          const formattedCampaigns: Campaign[] = contractCampaigns.map((cc) => ({
-            id: cc.id,
-            title: cc.title,
-            description: cc.description,
-            imageUrl: cc.imageUrl,
-            organizerAddress: cc.organizer,
-            targetAmount: cc.targetAmount,
-            deadline: cc.deadline,
-            category: cc.category,
-            publicDonatorCount: cc.publicDonatorCount,
-            isActive: cc.isActive,
-            isCompleted: false,
-            finalAmountRevealed: false,
-            daysLeft: cc.daysLeft,
-            createdAt: new Date() // Placeholder since contract doesn't store this
-          }));
-          
-          setCampaigns(formattedCampaigns);
+          // If wallet available, use it
+          await zlethCampaignContract.initialize(window.ethereum);
         } else {
-          setCampaigns([]); // No wallet or SSR, show empty state
+          // No wallet? Use read-only mode for public data
+          await zlethCampaignContract.initializeReadOnly();
         }
+        
+        const contractCampaigns = await zlethCampaignContract.getActiveCampaigns();
+        
+        // Convert contract campaigns to Campaign type format
+        const formattedCampaigns: Campaign[] = contractCampaigns.map((cc) => ({
+          id: cc.id,
+          title: cc.title,
+          description: cc.description,
+          imageUrl: cc.imageUrl,
+          organizerAddress: cc.organizer,
+          targetAmount: cc.targetAmount,
+          deadline: cc.deadline,
+          category: cc.category,
+          publicDonatorCount: cc.publicDonatorCount,
+          isActive: cc.isActive,
+          isCompleted: false,
+          finalAmountRevealed: false,
+          daysLeft: cc.daysLeft,
+          createdAt: new Date() // Placeholder since contract doesn't store this
+        }));
+        
+        setCampaigns(formattedCampaigns);
       } catch (error) {
-        console.log('Could not load campaigns from blockchain:', error);
+        console.log('Could not load campaigns from blockchain:', error instanceof Error ? error.message : String(error));
         setCampaigns([]); // Show empty state
       } finally {
         setLoading(false);
@@ -198,7 +204,7 @@ export default function Home() {
                         Secret
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600">Private Funds ✨</p>
+                    <p className="text-sm text-gray-600">Private Funds</p>
                   </div>
                 </div>
               </div>

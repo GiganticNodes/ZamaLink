@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useAccount } from 'wagmi';
 import { Header } from '@/components/header';
 import { BackgroundEffects } from '@/components/background-effects';
-import { DonationModal } from '@/components/donation-modal';
+import { PrivateDonationModal } from '@/components/private-donation-modal';
+import { ClaimFundsModal } from '@/components/claim-funds-modal';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { privateCampaignDonationContract } from '@/lib/contract';
+import { zlethCampaignContract } from '@/lib/zleth-contract';
 import { Campaign, RecentDonation } from '@/types/creator';
+import { Wallet, Shield } from 'lucide-react';
 import Image from 'next/image';
 
 export default function CampaignDetailPage() {
@@ -18,7 +21,10 @@ export default function CampaignDetailPage() {
   const [recentDonations, setRecentDonations] = useState<RecentDonation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDonationModal, setShowDonationModal] = useState(false);
+  const [showClaimModal, setShowClaimModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { address, isConnected } = useAccount();
 
   useEffect(() => {
     loadCampaignDetails();
@@ -29,23 +35,29 @@ export default function CampaignDetailPage() {
       setLoading(true);
       setError(null);
 
+      // Initialize ZLETH contract system
+      if (typeof window !== 'undefined' && window.ethereum) {
+        await zlethCampaignContract.initialize(window.ethereum);
+      } else {
+        await zlethCampaignContract.initializeReadOnly();
+      }
+
       // Load campaign info
-      const campaignInfo = await privateCampaignDonationContract.getCampaignInfo(campaignId);
+      const campaignInfo = await zlethCampaignContract.getCampaignInfo(campaignId);
       if (!campaignInfo) {
         setError('Campaign not found');
         return;
       }
 
       // Load metrics
-      const metrics = await privateCampaignDonationContract.getCampaignMetrics(campaignId);
+      const metrics = await zlethCampaignContract.getCampaignMetrics(campaignId);
       
       // Load recent donations
-      const donations = await privateCampaignDonationContract.getRecentDonations(campaignId);
+      const donations = await zlethCampaignContract.getRecentDonations(campaignId, 10);
 
       // Combine data
       const fullCampaign: Campaign = {
         id: campaignId,
-        organizer: campaignInfo.organizer,
         organizerAddress: campaignInfo.organizer,
         title: campaignInfo.title,
         description: campaignInfo.description,
@@ -57,13 +69,20 @@ export default function CampaignDetailPage() {
         isCompleted: campaignInfo.isCompleted || false,
         finalAmountRevealed: campaignInfo.finalAmountRevealed || false,
         category: campaignInfo.category,
-        daysLeft: campaignInfo.daysLeft || 0,
-        totalDonators: metrics?.totalDonators || 0,
-        progressPercentage: 0 // Will calculate if revealed
+        daysLeft: metrics?.daysLeft || 0
       };
 
       setCampaign(fullCampaign);
-      setRecentDonations(donations);
+      
+      // Map donations from ZLETH system format to RecentDonation format
+      const mappedDonations: RecentDonation[] = donations.map(donation => ({
+        donorAddress: donation.donor,
+        timestamp: donation.timestamp,
+        isAnonymous: donation.isAnonymous,
+        displayName: donation.displayName || (donation.isAnonymous ? 'Anonymous' : `${donation.donor.slice(0, 6)}...${donation.donor.slice(-4)}`)
+      }));
+      
+      setRecentDonations(mappedDonations);
 
     } catch (error) {
       console.error('Failed to load campaign details:', error instanceof Error ? error.message : String(error));
@@ -86,10 +105,36 @@ export default function CampaignDetailPage() {
     return `${hours} hour${hours > 1 ? 's' : ''} left`;
   };
 
-  const getCategoryName = (category: number) => {
+  const getCategoryName = (category: any) => {
+    // Handle both enum and numeric values
+    if (typeof category === 'string') {
+      const nameMap: { [key: string]: string } = {
+        'DISASTER_RELIEF': 'Disaster Relief',
+        'MEDICAL': 'Medical',
+        'EDUCATION': 'Education',
+        'ENVIRONMENT': 'Environment',
+        'SOCIAL': 'Social',
+        'EMERGENCY': 'Emergency',
+        'OTHER': 'Other'
+      };
+      return nameMap[category] || 'Other';
+    }
+    
+    // Fallback for numeric values
     const categories = ['Disaster Relief', 'Medical', 'Education', 'Environment', 'Social', 'Emergency', 'Other'];
     return categories[category] || 'Other';
   };
+
+  const handleClaimSuccess = async (txHash: string) => {
+    console.log('✅ Funds claimed successfully:', txHash);
+    // Reload campaign details to update state
+    await loadCampaignDetails();
+    setShowClaimModal(false);
+  };
+
+  // Check if current user is the organizer
+  const isOrganizer = campaign && address && 
+    campaign.organizerAddress.toLowerCase() === address.toLowerCase();
 
   if (loading) {
     return (
@@ -144,8 +189,8 @@ export default function CampaignDetailPage() {
                 ) : (
                   <div className="w-full h-64 md:h-96 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
                     <div className="text-center text-gray-500">
-                      <div className="text-4xl mb-2">📸</div>
-                      <p>No image</p>
+                      <div className="text-4xl mb-2">No Image</div>
+                      <p>Campaign image not available</p>
                     </div>
                   </div>
                 )}
@@ -181,18 +226,51 @@ export default function CampaignDetailPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Organizer:</span>
-                    <span className="font-mono text-sm">{campaign.organizer.slice(0, 6)}...{campaign.organizer.slice(-4)}</span>
+                    <span className="font-mono text-sm">{campaign.organizerAddress.slice(0, 6)}...{campaign.organizerAddress.slice(-4)}</span>
                   </div>
                 </div>
                 
-                {campaign.isActive && (
-                  <button
-                    onClick={() => setShowDonationModal(true)}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-6 rounded-neumorphic font-semibold transition-colors"
-                  >
-                    Donate Now
-                  </button>
-                )}
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  {/* Show organizer controls if user is the organizer */}
+                  {isOrganizer && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-neumorphic p-4 mb-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Shield className="w-5 h-5 text-blue-600" />
+                        <span className="font-medium text-blue-800">Organizer Controls</span>
+                      </div>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => setShowClaimModal(true)}
+                          className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
+                        >
+                          <Wallet className="w-4 h-4" />
+                          <span>Claim Donated Funds</span>
+                        </button>
+                        <p className="text-xs text-blue-600">
+                          Claim all ZLETH donations and convert to ETH in your wallet
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                
+                  {/* Donation button for everyone else */}
+                  {campaign.isActive && !isOrganizer && (
+                    <button
+                      onClick={() => setShowDonationModal(true)}
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-6 rounded-neumorphic font-semibold transition-colors"
+                    >
+                      Donate Now
+                    </button>
+                  )}
+                  
+                  {/* Show message if campaign is not active */}
+                  {!campaign.isActive && (
+                    <div className="w-full bg-gray-100 text-gray-500 py-3 px-6 rounded-neumorphic text-center">
+                      Campaign has ended
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -218,9 +296,11 @@ export default function CampaignDetailPage() {
                       <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
                         <div>
                           <div className="font-medium text-sm">
-                            {donation.isAnonymous ? 'Anonymous' : `${donation.donor.slice(0, 6)}...${donation.donor.slice(-4)}`}
+                            {donation.isAnonymous ? 'Anonymous' : `${donation.donorAddress.slice(0, 6)}...${donation.donorAddress.slice(-4)}`}
                           </div>
-                          <div className="text-xs text-gray-500">{donation.timeAgo}</div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(donation.timestamp * 1000).toLocaleDateString()}
+                          </div>
                         </div>
                         <div className="text-green-600 font-semibold text-sm">
                           Donated
@@ -237,15 +317,23 @@ export default function CampaignDetailPage() {
         </div>
       </div>
 
-      {/* Donation Modal */}
-      {showDonationModal && (
-        <DonationModal
+      {/* Modals */}
+      <PrivateDonationModal
+        isOpen={showDonationModal}
+        campaign={campaign}
+        onClose={() => setShowDonationModal(false)}
+        onSuccess={() => {
+          setShowDonationModal(false);
+          loadCampaignDetails(); // Refresh data
+        }}
+      />
+      
+      {campaign && (
+        <ClaimFundsModal
           campaign={campaign}
-          onClose={() => setShowDonationModal(false)}
-          onDonationComplete={() => {
-            setShowDonationModal(false);
-            loadCampaignDetails(); // Refresh data
-          }}
+          isOpen={showClaimModal}
+          onClose={() => setShowClaimModal(false)}
+          onSuccess={handleClaimSuccess}
         />
       )}
     </div>

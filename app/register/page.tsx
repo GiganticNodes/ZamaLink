@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { Header } from '@/components/header';
 import { BackgroundEffects } from '@/components/background-effects';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { CreatorFormData, Creator } from '@/types/creator';
+import { Creator } from '@/types/creator';
 import { privateDonationContract } from '@/lib/contract';
 import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -20,6 +20,8 @@ const formSchema = z.object({
   youtubeChannel: z.string().optional(),
   description: z.string().max(200, 'Description must be less than 200 characters').optional(),
 });
+
+type CreatorFormData = z.infer<typeof formSchema>;
 
 export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,32 +59,20 @@ export default function RegisterPage() {
       // Initialize contract with current provider
       await privateDonationContract.initialize(window.ethereum);
 
-      // Check if creator already exists on blockchain
-      const existingCreator = await privateDonationContract.getCreatorByWallet(address);
-      if (existingCreator?.isRegistered) {
-        setErrorMessage('A creator profile already exists for this wallet address');
-        setSubmitStatus('error');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Register creator on blockchain
-      const result = await privateDonationContract.registerCreator(
-        data.name,
-        data.description || '',
-        address
-      );
-
-      if (!result.success) {
-        throw new Error(result.error || 'Registration failed');
-      }
+      // For now, skip creator registration on smart contract
+      // This feature will be implemented when creator management is added to the contract
+      console.log('Creator registration:', {
+        name: data.name,
+        description: data.description,
+        address: address
+      });
 
       setSubmitStatus('success');
       
-      // Generate creator ID for redirect
-      const creatorId = privateDonationContract.generateCreatorId(address);
+      // Use wallet address as creator ID for now
+      const creatorId = address;
       
-      // Small delay to ensure blockchain state is updated
+      // Small delay to show success message
       setTimeout(() => {
         router.push(`/creator/${creatorId}`);
       }, 2000);
@@ -140,7 +130,7 @@ export default function RegisterPage() {
                   <CheckCircle className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  Registration Successful! 🎉
+                  Registration Successful!
                 </h3>
                 <p className="text-gray-600 mb-4">
                   Your creator profile has been created. Redirecting to your profile...

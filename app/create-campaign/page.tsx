@@ -10,7 +10,7 @@ import { Header } from '@/components/header';
 import { BackgroundEffects } from '@/components/background-effects';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { CampaignFormData, CampaignCategory, getCategoryDisplayName } from '@/types/creator';
-import { privateCampaignDonationContract } from '@/lib/contract';
+import { zlethCampaignContract } from '@/lib/zleth-contract';
 import { Plus, AlertCircle, CheckCircle, ImageIcon } from 'lucide-react';
 
 const formSchema = z.object({
@@ -66,10 +66,10 @@ export default function CreateCampaignPage() {
       }
 
       // Initialize contract with current provider
-      await privateCampaignDonationContract.initialize(window.ethereum);
+      await zlethCampaignContract.initialize(window.ethereum);
 
       // Create campaign on blockchain
-      const result = await privateCampaignDonationContract.createCampaign(
+      const result = await zlethCampaignContract.createCampaign(
         data.title,
         data.description,
         data.imageUrl || '',
@@ -143,7 +143,7 @@ export default function CreateCampaignPage() {
                   <CheckCircle className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  Campaign Created Successfully! 🎉
+                  Campaign Created Successfully!
                 </h3>
                 <p className="text-gray-600 mb-4">
                   Your campaign has been created. Redirecting to campaign page...

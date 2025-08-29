@@ -6,9 +6,10 @@ import { Header } from '@/components/header';
 import { BackgroundEffects } from '@/components/background-effects';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Campaign, CampaignCategory, getCategoryDisplayName, formatTimeLeft } from '@/types/creator';
-import { privateCampaignDonationContract } from '@/lib/contract';
+import { zlethCampaignContract } from '@/lib/zleth-contract';
 import { BarChart3, Eye, EyeOff, Calendar, Target, Users, Wallet, Plus, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { ClaimFundsModal } from '@/components/claim-funds-modal';
 
 interface OrganizerCampaignView extends Campaign {
   decryptedTotalDonations: string;
@@ -21,6 +22,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showDecrypted, setShowDecrypted] = useState<{[key: string]: boolean}>({});
+  const [claimModalOpen, setClaimModalOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
   const { address, isConnected } = useAccount();
 
@@ -38,13 +41,10 @@ export default function DashboardPage() {
 
     try {
       setLoading(true);
-      await privateCampaignDonationContract.initialize(window.ethereum);
+      await zlethCampaignContract.initialize(window.ethereum);
       
-      // Get all campaigns and filter by organizer
-      const allCampaigns = await privateCampaignDonationContract.getAllCampaigns();
-      const organizerCampaigns = allCampaigns.filter(
-        campaign => campaign.organizerAddress.toLowerCase() === address.toLowerCase()
-      );
+      // Get campaigns by organizer directly (more efficient)
+      const organizerCampaigns = await zlethCampaignContract.getCampaignsByOrganizer(address);
 
       // For each campaign, get decrypted metrics (only organizer can see this)
       const campaignsWithDecryption = await Promise.all(
@@ -94,24 +94,45 @@ export default function DashboardPage() {
   const handleCompleteCampaign = async (campaignId: string) => {
     if (!address) return;
     try {
-      await privateCampaignDonationContract.completeCampaign(campaignId, address);
-      // Reload campaigns
-      await loadOrganizerCampaigns();
+      const result = await zlethCampaignContract.completeCampaign(campaignId);
+      if (result.success) {
+        alert('✅ Campaign completed successfully!');
+        // Reload campaigns
+        await loadOrganizerCampaigns();
+      } else {
+        throw new Error(result.error || 'Unknown error');
+      }
     } catch (error: any) {
       console.error('Failed to complete campaign:', error);
       alert('Failed to complete campaign: ' + (error.message || 'Unknown error'));
     }
   };
 
-  const handleRevealFinalAmount = async (campaignId: string) => {
+  const handleClaimFunds = (campaign: Campaign) => {
+    setSelectedCampaign(campaign);
+    setClaimModalOpen(true);
+  };
+
+  const handleClaimSuccess = async (txHash: string) => {
+    console.log('✅ Funds claimed successfully:', txHash);
+    // Reload campaigns to update state
+    await loadOrganizerCampaigns();
+    setClaimModalOpen(false);
+    setSelectedCampaign(null);
+  };
+
+  const handleAllowDecryption = async (campaignId: string) => {
     if (!address) return;
     try {
-      await privateCampaignDonationContract.revealFinalAmount(campaignId, address);
-      // Reload campaigns
-      await loadOrganizerCampaigns();
+      const result = await zlethCampaignContract.allowOrganizerDecrypt(campaignId);
+      if (result.success) {
+        alert('✅ Decryption permission granted! You can now see private totals.');
+      } else {
+        throw new Error(result.error || 'Unknown error');
+      }
     } catch (error: any) {
-      console.error('Failed to reveal final amount:', error);
-      alert('Failed to reveal final amount: ' + (error.message || 'Unknown error'));
+      console.error('Failed to allow decryption:', error);
+      alert('Failed to grant decryption permission: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -319,21 +340,32 @@ export default function DashboardPage() {
                         View Campaign
                       </Link>
                       
+                      {/* Claim Funds - Available for any campaign with donations */}
+                      <button
+                        onClick={() => handleClaimFunds(campaign)}
+                        className="px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-neumorphic transition-colors flex items-center justify-center space-x-2"
+                        title="Claim all ZLETH donations and convert to ETH"
+                      >
+                        <Wallet className="w-4 h-4" />
+                        <span>Claim Funds</span>
+                      </button>
+
+                      {/* Grant Decryption Permission */}
+                      <button
+                        onClick={() => handleAllowDecryption(campaign.id)}
+                        className="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-neumorphic transition-colors flex items-center justify-center space-x-2"
+                        title="Allow yourself to decrypt private donation totals"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>Enable Decrypt</span>
+                      </button>
+                      
                       {campaign.isActive && !campaign.isCompleted && (
                         <button
                           onClick={() => handleCompleteCampaign(campaign.id)}
                           className="px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-neumorphic transition-colors"
                         >
-                          Complete
-                        </button>
-                      )}
-                      
-                      {campaign.isCompleted && !campaign.finalAmountRevealed && (
-                        <button
-                          onClick={() => handleRevealFinalAmount(campaign.id)}
-                          className="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-neumorphic transition-colors"
-                        >
-                          Reveal Total
+                          Complete Campaign
                         </button>
                       )}
                     </div>
@@ -344,6 +376,19 @@ export default function DashboardPage() {
           )}
         </div>
       </main>
+
+      {/* Claim Funds Modal */}
+      {selectedCampaign && (
+        <ClaimFundsModal
+          campaign={selectedCampaign}
+          isOpen={claimModalOpen}
+          onClose={() => {
+            setClaimModalOpen(false);
+            setSelectedCampaign(null);
+          }}
+          onSuccess={handleClaimSuccess}
+        />
+      )}
     </div>
   );
 }
