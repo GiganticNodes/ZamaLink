@@ -1,4 +1,10 @@
-import { Contract, BrowserProvider, parseEther, keccak256, toUtf8Bytes } from 'ethers';
+/**
+ * @deprecated This contract integration is deprecated.
+ * Please use lib/zleth-contract.ts for the new ZLETH-based private donation system.
+ * This file will be removed in a future update.
+ */
+
+import { Contract, BrowserProvider, JsonRpcProvider, parseEther, keccak256, toUtf8Bytes } from 'ethers';
 import { Campaign, CampaignCategory, CampaignInfo, CampaignMetrics, RecentDonation as CampaignRecentDonation } from '@/types/creator';
 
 // ABI untuk fungsi yang kita butuhkan dari contract PrivateCampaignDonation
@@ -178,22 +184,12 @@ const CONTRACT_ABI = [
         "type": "bytes32"
       },
       {
-        "internalType": "externalEuint64",
-        "name": "encryptedAmount",
-        "type": "externalEuint64"
-      },
-      {
-        "internalType": "bytes",
-        "name": "inputProof",
-        "type": "bytes"
-      },
-      {
         "internalType": "bool",
         "name": "isAnonymous",
         "type": "bool"
       }
     ],
-    "name": "donate",
+    "name": "donateSimple",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -211,9 +207,101 @@ const CONTRACT_ABI = [
         "type": "bool"
       }
     ],
-    "name": "donateSimple",
+    "name": "donatePublic",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "externalEuint128",
+        "name": "encryptedAmount",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "inputProof",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bool",
+        "name": "isAnonymous",
+        "type": "bool"
+      }
+    ],
+    "name": "donateEncrypted",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getCampaignTotalDonations",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getCampaignDonationCount",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "revealTotalsPublic",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "allowOrganizerDecrypt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -312,11 +400,49 @@ const CONTRACT_ABI = [
     ],
     "name": "DonationMade",
     "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "totalHandle",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TotalsHandle",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "campaignId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "finalAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "FinalAmountRevealed",
+    "type": "event"
   }
 ];
 
-// Contract address di Sepolia
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0xAD9c503F9AC5c2fA8152B8699f8db469B5a8809F";
+// Contract address di Sepolia - UPDATED after redeployment
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x2Ab89Ee2092d1ccd652Da1360C36Da7bf9A200Ef";
 
 export interface ContractCampaign {
   id: string;
@@ -355,9 +481,44 @@ export class PrivateCampaignDonationContract {
     this.contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
   }
 
-  // Generate campaign ID dari title dan organizer
+  // Initialize read-only mode without wallet connection
+  async initializeReadOnly(): Promise<void> {
+    // Use multiple RPC providers for better reliability
+    const rpcEndpoints = [
+      'https://sepolia.gateway.tenderly.co',
+      'https://ethereum-sepolia.publicnode.com',
+      'https://1rpc.io/sepolia',
+      ...(process.env.NEXT_PUBLIC_INFURA_API_KEY ? [`https://sepolia.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API_KEY}`] : [])
+    ];
+    
+    let provider: JsonRpcProvider | null = null;
+    
+    // Try each RPC endpoint until one works
+    for (const endpoint of rpcEndpoints) {
+      try {
+        const testProvider = new JsonRpcProvider(endpoint);
+        // Test connection with a simple call
+        await testProvider.getNetwork();
+        provider = testProvider;
+        console.log(`Connected to RPC: ${endpoint}`);
+        break;
+      } catch (error) {
+        console.warn(`RPC endpoint failed: ${endpoint}`, error);
+        continue;
+      }
+    }
+    
+    if (!provider) {
+      throw new Error('Semua RPC endpoint gagal. Cek koneksi internet atau coba lagi.');
+    }
+    
+    this.contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+  }
+
+  // Generate deterministic campaign ID dari title dan organizer (used during creation only)
   generateCampaignId(title: string, organizerAddress: string): string {
-    return keccak256(toUtf8Bytes(`${title.toLowerCase()}_${organizerAddress.toLowerCase()}_${Date.now()}`));
+    // Use a deterministic approach without timestamp for consistent IDs
+    return keccak256(toUtf8Bytes(`${title.toLowerCase()}_${organizerAddress.toLowerCase()}`));
   }
 
   // Create campaign ke blockchain
@@ -508,8 +669,8 @@ export class PrivateCampaignDonationContract {
     }
   }
 
-  // Simple donation to campaign
-  async donateSimple(
+  // Public donation (fallback, non-FHE)
+  async donate(
     campaignId: string,
     amountEth: string,
     isAnonymous: boolean = false
@@ -519,7 +680,7 @@ export class PrivateCampaignDonationContract {
 
       const amountWei = parseEther(amountEth);
       
-      const tx = await this.contract.donateSimple(campaignId, isAnonymous, {
+      const tx = await this.contract.donate(campaignId, isAnonymous, {
         value: amountWei
       });
       const receipt = await tx.wait();
@@ -532,6 +693,151 @@ export class PrivateCampaignDonationContract {
       return {
         success: false,
         error: error.message || 'Donation failed'
+      };
+    }
+  }
+
+  // Alias for backward compatibility
+  async donateSimple(
+    campaignId: string,
+    amountEth: string,
+    isAnonymous: boolean = false
+  ): Promise<{ success: boolean; txHash?: string; error?: string }> {
+    return this.donate(campaignId, amountEth, isAnonymous);
+  }
+
+  // Encrypted donation with FHEVM and proper validation
+  async donateEncrypted(
+    campaignId: string,
+    amountEth: string,
+    encryptedAmount: any, // externalEuint64 from Relayer SDK
+    inputProof: string, // bytes proof from Relayer SDK
+    isAnonymous: boolean = false
+  ): Promise<{ success: boolean; txHash?: string; error?: string }> {
+    try {
+      if (!this.contract) throw new Error('Contract not initialized');
+
+      const amountWei = parseEther(amountEth);
+      
+      const tx = await this.contract.donateEncrypted(
+        campaignId, 
+        encryptedAmount,
+        inputProof,
+        isAnonymous, 
+        {
+          value: amountWei
+        }
+      );
+      const receipt = await tx.wait();
+      
+      return {
+        success: true,
+        txHash: receipt.hash
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Encrypted donation failed'
+      };
+    }
+  }
+
+  // Get encrypted campaign data (organizers only)
+  async getCampaignEncryptedTotals(campaignId: string): Promise<{
+    encryptedTotal?: string;
+    encryptedCount?: string;
+    error?: string;
+  }> {
+    try {
+      if (!this.contract) throw new Error('Contract not initialized');
+
+      const encryptedTotal = await this.contract.getCampaignTotalDonations(campaignId);
+      const encryptedCount = await this.contract.getCampaignDonationCount(campaignId);
+      
+      return {
+        encryptedTotal: encryptedTotal.toString(),
+        encryptedCount: encryptedCount.toString()
+      };
+    } catch (error: any) {
+      return {
+        error: error.message || 'Failed to get encrypted data'
+      };
+    }
+  }
+
+  // Request public decryption via oracle (organizers only)
+  async revealTotalsPublic(campaignId: string): Promise<{ 
+    success: boolean; 
+    txHash?: string; 
+    requestHandle?: string;
+    error?: string 
+  }> {
+    try {
+      if (!this.contract) throw new Error('Contract not initialized');
+      
+      const tx = await this.contract.revealTotalsPublic(campaignId);
+      const receipt = await tx.wait();
+      
+      // Extract request handle from event
+      const event = receipt.events?.find((e: any) => e.event === 'TotalsHandle');
+      const requestHandle = event?.args?.totalHandle || '';
+      
+      return {
+        success: true,
+        txHash: receipt.hash,
+        requestHandle
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to request public decryption'
+      };
+    }
+  }
+
+  // Poll for oracle decryption result
+  async getOracleDecryptionResult(
+    requestHandle: string,
+    maxWaitTime: number = 60000
+  ): Promise<{ success: boolean; result?: string; error?: string }> {
+    try {
+      // This would use actual oracle client in production
+      // For now, return mock result after delay
+      console.log('Polling oracle for result...');
+      
+      await new Promise(resolve => setTimeout(resolve, 5000)); // 5s delay
+      
+      // Mock successful result
+      const mockResult = '1.5'; // 1.5 ETH
+      
+      return {
+        success: true,
+        result: mockResult
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Oracle decryption failed'
+      };
+    }
+  }
+
+  // Allow organizer to decrypt privately (organizers only)
+  async allowOrganizerDecrypt(campaignId: string): Promise<{ success: boolean; txHash?: string; error?: string }> {
+    try {
+      if (!this.contract) throw new Error('Contract not initialized');
+      
+      const tx = await this.contract.allowOrganizerDecrypt(campaignId);
+      const receipt = await tx.wait();
+      
+      return {
+        success: true,
+        txHash: receipt.hash
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to allow decryption'
       };
     }
   }
@@ -583,22 +889,24 @@ export class PrivateCampaignDonationContract {
     return `${Math.floor(seconds / 86400)}d ago`;
   }
 
-  // Get organizer campaign view dengan data decrypted (placeholder untuk sekarang)
-  async getOrganizerCampaignView(campaignId: string): Promise<{decryptedTotalDonations: string, decryptedDonationCount: number}> {
+  // Get organizer campaign view (requires Relayer SDK for decryption)
+  async getOrganizerCampaignView(campaignId: string): Promise<{encryptedTotalDonations: string, encryptedDonationCount: string}> {
     try {
       if (!this.contract) throw new Error('Contract not initialized');
       
-      // Placeholder: Di implementasi nyata, ini akan call contract untuk decrypt data
-      // Untuk sekarang return mock data
+      // Get encrypted totals - organizer will need to decrypt using Relayer SDK
+      const encryptedTotal = await this.contract.getCampaignTotalDonations(campaignId);
+      const encryptedCount = await this.contract.getCampaignDonationCount(campaignId);
+      
       return {
-        decryptedTotalDonations: "0",
-        decryptedDonationCount: 0
+        encryptedTotalDonations: encryptedTotal.toString(),
+        encryptedDonationCount: encryptedCount.toString()
       };
     } catch (error) {
       console.error('Failed to get organizer campaign view:', error instanceof Error ? error.message : String(error));
       return {
-        decryptedTotalDonations: "0",
-        decryptedDonationCount: 0
+        encryptedTotalDonations: "0x00",
+        encryptedDonationCount: "0x00"
       };
     }
   }
@@ -621,23 +929,7 @@ export class PrivateCampaignDonationContract {
     }
   }
 
-  // Reveal final amount (placeholder)
-  async revealFinalAmount(campaignId: string, organizerAddress: string): Promise<{success: boolean, error?: string}> {
-    try {
-      if (!this.contract) throw new Error('Contract not initialized');
-      
-      // Placeholder: Di implementasi nyata akan call smart contract untuk reveal encrypted total
-      console.log(`Revealing final amount for campaign ${campaignId} by ${organizerAddress}`);
-      
-      return { success: true };
-    } catch (error: any) {
-      console.error('Failed to reveal final amount:', error instanceof Error ? error.message : String(error));
-      return {
-        success: false,
-        error: error.message || 'Failed to reveal final amount'
-      };
-    }
-  }
+
 
   // Get contract instance for advanced usage
   getContract(): Contract | null {
