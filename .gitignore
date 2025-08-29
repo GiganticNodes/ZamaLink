@@ -35,3 +35,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 temp
+testtemp
+
+# App summary
+CONTRACT_MIGRATION.md
+IMPLEMENTATION_SUMMARY.md
+ZLETH_DEPLOYMENT.md
+RAINBOWKIT_FIX.md
+CLAIM_SYSTEM.md
+CLAIM_FIX.md
+compile.log

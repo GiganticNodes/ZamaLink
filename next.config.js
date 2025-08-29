@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   devIndicators: {
-    buildActivity: false,
-    buildActivityPosition: 'bottom-right'
+    position: 'bottom-left'
   },
   images: {
     domains: ['images.pexels.com'],
@@ -13,7 +12,16 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react']
-  }
+  },
+  webpack: (config) => {
+    config.resolve.fallback = {
+      fs: false,
+      net: false,
+      tls: false,
+    };
+    
+    return config;
+  },
 };
 
 module.exports = nextConfig;
