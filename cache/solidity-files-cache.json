@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\contracts\\PrivateDonation.sol": {
-      "lastModificationDate": 1755820059565,
-      "contentHash": "4dd57ceafbbf824662824473bd59fb16",
+      "lastModificationDate": 1756411794270,
+      "contentHash": "d9acc1ceaebac9999dd7c1861a135d8e",
       "sourceName": "contracts/PrivateDonation.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -49,11 +49,12 @@
         "^0.8.24"
       ],
       "artifacts": [
+        "IConfidentialERC20",
         "PrivateCampaignDonation"
       ]
     },
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\fhevmTemp\\@fhevm\\solidity\\config\\ZamaConfig.sol": {
-      "lastModificationDate": 1755862357064,
+      "lastModificationDate": 1756488856071,
       "contentHash": "74ceff85ab4c313b5dba02af21ec33e8",
       "sourceName": "@fhevm/solidity/config/ZamaConfig.sol",
       "solcConfig": {
@@ -103,53 +104,8 @@
         "ZamaConfig"
       ]
     },
-    "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@openzeppelin\\contracts\\utils\\ReentrancyGuard.sol": {
-      "lastModificationDate": 1755798808760,
-      "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
-      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "metadata": {
-            "bytecodeHash": "none",
-            "useLiteralContent": true
-          },
-          "optimizer": {
-            "enabled": true,
-            "runs": 800
-          },
-          "evmVersion": "cancun",
-          "viaIR": true,
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "devdoc",
-                "userdoc",
-                "storageLayout",
-                "evm.gasEstimates"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ReentrancyGuard"
-      ]
-    },
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@openzeppelin\\contracts\\access\\Ownable.sol": {
-      "lastModificationDate": 1755798808645,
+      "lastModificationDate": 1755983402655,
       "contentHash": "d3c790edc9ccf808a17c5a6cd13614fd",
       "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
       "solcConfig": {
@@ -196,7 +152,7 @@
       ]
     },
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@openzeppelin\\contracts\\utils\\Pausable.sol": {
-      "lastModificationDate": 1755798808717,
+      "lastModificationDate": 1755983402734,
       "contentHash": "0d47b53e10b1985efbb396f937626279",
       "sourceName": "@openzeppelin/contracts/utils/Pausable.sol",
       "solcConfig": {
@@ -242,8 +198,53 @@
         "Pausable"
       ]
     },
+    "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@openzeppelin\\contracts\\utils\\ReentrancyGuard.sol": {
+      "lastModificationDate": 1755983402774,
+      "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
+      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none",
+            "useLiteralContent": true
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "cancun",
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "devdoc",
+                "userdoc",
+                "storageLayout",
+                "evm.gasEstimates"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
+      ]
+    },
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@fhevm\\solidity\\lib\\FHE.sol": {
-      "lastModificationDate": 1755798788573,
+      "lastModificationDate": 1755983401579,
       "contentHash": "8e22d2a795a21981689274ee3479f871",
       "sourceName": "@fhevm/solidity/lib/FHE.sol",
       "solcConfig": {
@@ -294,7 +295,7 @@
       ]
     },
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\fhevmTemp\\@zama-fhe\\oracle-solidity\\address\\ZamaOracleAddress.sol": {
-      "lastModificationDate": 1755801291106,
+      "lastModificationDate": 1756488856073,
       "contentHash": "7d4cce05c3d5e3799454d5a9fba75048",
       "sourceName": "@zama-fhe/oracle-solidity/address/ZamaOracleAddress.sol",
       "solcConfig": {
@@ -337,7 +338,7 @@
       "artifacts": []
     },
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@fhevm\\solidity\\lib\\Impl.sol": {
-      "lastModificationDate": 1755798789356,
+      "lastModificationDate": 1755983401608,
       "contentHash": "25900e2de7666317ca24d34c5d8a2e7b",
       "sourceName": "@fhevm/solidity/lib/Impl.sol",
       "solcConfig": {
@@ -386,51 +387,8 @@
         "Impl"
       ]
     },
-    "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\encrypted-types\\EncryptedTypes.sol": {
-      "lastModificationDate": 1755798787048,
-      "contentHash": "521a624fad71cd29fc4b7c443b41bb86",
-      "sourceName": "encrypted-types/EncryptedTypes.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "metadata": {
-            "bytecodeHash": "none",
-            "useLiteralContent": true
-          },
-          "optimizer": {
-            "enabled": true,
-            "runs": 800
-          },
-          "evmVersion": "cancun",
-          "viaIR": true,
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "devdoc",
-                "userdoc",
-                "storageLayout",
-                "evm.gasEstimates"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": []
-    },
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@fhevm\\solidity\\lib\\FheType.sol": {
-      "lastModificationDate": 1755798788912,
+      "lastModificationDate": 1755983401593,
       "contentHash": "65f472a3e319ba73ac6b19a5e8660d15",
       "sourceName": "@fhevm/solidity/lib/FheType.sol",
       "solcConfig": {
@@ -472,8 +430,51 @@
       ],
       "artifacts": []
     },
+    "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\encrypted-types\\EncryptedTypes.sol": {
+      "lastModificationDate": 1755983389442,
+      "contentHash": "521a624fad71cd29fc4b7c443b41bb86",
+      "sourceName": "encrypted-types/EncryptedTypes.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none",
+            "useLiteralContent": true
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "cancun",
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "devdoc",
+                "userdoc",
+                "storageLayout",
+                "evm.gasEstimates"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": []
+    },
     "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
-      "lastModificationDate": 1755798805883,
+      "lastModificationDate": 1755983400562,
       "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -515,6 +516,154 @@
       ],
       "artifacts": [
         "Context"
+      ]
+    },
+    "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\contracts\\ZLETHWrapper.sol": {
+      "lastModificationDate": 1756489027782,
+      "contentHash": "ba2cbf0330048e4e86eb8c1fb727ba39",
+      "sourceName": "contracts/ZLETHWrapper.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none",
+            "useLiteralContent": true
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "cancun",
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "devdoc",
+                "userdoc",
+                "storageLayout",
+                "evm.gasEstimates"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@fhevm/solidity/config/ZamaConfig.sol",
+        "@fhevm/solidity/lib/FHE.sol",
+        "@openzeppelin/contracts/utils/math/SafeCast.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "ZLETHWrapper"
+      ]
+    },
+    "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SafeCast.sol": {
+      "lastModificationDate": 1755983402819,
+      "contentHash": "2adca1150f58fc6f3d1f0a0f22ee7cca",
+      "sourceName": "@openzeppelin/contracts/utils/math/SafeCast.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none",
+            "useLiteralContent": true
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "cancun",
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "devdoc",
+                "userdoc",
+                "storageLayout",
+                "evm.gasEstimates"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SafeCast"
+      ]
+    },
+    "C:\\Users\\Maulana\\Pictures\\Personal Project\\ZamaLink\\contracts\\ZamaLinkCampaign.sol": {
+      "lastModificationDate": 1756489199405,
+      "contentHash": "272553084fc4355cb133d43d384eb246",
+      "sourceName": "contracts/ZamaLinkCampaign.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none",
+            "useLiteralContent": true
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "cancun",
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "devdoc",
+                "userdoc",
+                "storageLayout",
+                "evm.gasEstimates"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@fhevm/solidity/lib/FHE.sol",
+        "@fhevm/solidity/config/ZamaConfig.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/utils/Pausable.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/math/SafeCast.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IZLETHWrapper",
+        "ZamaLinkCampaign"
       ]
     }
   }
