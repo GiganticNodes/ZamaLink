@@ -188,12 +188,6 @@ NEXT_PUBLIC_CAMPAIGN_CONTRACT_ADDRESS=0xYourCampaignAddress
 NEXT_PUBLIC_NETWORK=sepolia
 ```
 
-## Documentation
-
-- **[Claim System Guide](CLAIM_SYSTEM.md)** - How to claim campaign funds
-- **[Contract Migration](CONTRACT_MIGRATION.md)** - Migration to ZLETH system
-- **[RainbowKit Fix](RAINBOWKIT_FIX.md)** - Module resolution fixes
-
 ## Network Configuration
 
 ### Sepolia Testnet
