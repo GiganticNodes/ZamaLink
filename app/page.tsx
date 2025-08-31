@@ -40,9 +40,15 @@ export default function Home() {
         try {
           await zlethCampaignContract.initialize(window.ethereum);
         } catch (initError) {
-          console.warn('Could not initialize ZLETH campaign contract:', initError);
-          setCampaigns([]);
-          return;
+          console.warn('Could not initialize with wallet, trying read-only mode:', initError);
+          try {
+            await zlethCampaignContract.initializeReadOnly();
+            console.log('✅ Read-only mode initialized successfully');
+          } catch (readOnlyError) {
+            console.error('Failed to initialize in read-only mode:', readOnlyError);
+            setCampaigns([]);
+            return;
+          }
         }
         
         const contractCampaigns = await zlethCampaignContract.getActiveCampaigns();
