@@ -4,6 +4,16 @@
 
 ZamaLink is a revolutionary crowdfunding platform that enables **fully private donations** using advanced FHEVM (Fully Homomorphic Encryption Virtual Machine) technology. Campaign organizers can raise funds while keeping all donation amounts completely encrypted and private until claimed.
 
+## Smart Contracts (Sepolia Testnet)
+
+### Current Deployment
+| Contract | Address | Purpose |
+|----------|---------|---------|
+| **ZLETHWrapper** | [`0xC92A0100589Baace55eE5724733824703c152d0B`](https://sepolia.etherscan.io/address/0xC92A0100589Baace55eE5724733824703c152d0B) | Private ETH wrapper |
+| **ZamaLinkCampaign** | [`0xE004EB22a1a6864d32664039a7325056ae15Be1c`](https://sepolia.etherscan.io/address/0xE004EB22a1a6864d32664039a7325056ae15Be1c) | Campaign management |
+
+- **Live Demo**: 
+
 ## Features
 
 ### **Full Privacy System**
@@ -64,13 +74,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-## Smart Contracts (Sepolia Testnet)
 
-### Current Deployment
-| Contract | Address | Purpose |
-|----------|---------|---------|
-| **ZLETHWrapper** | [`0xC92A0100589Baace55eE5724733824703c152d0B`](https://sepolia.etherscan.io/address/0xC92A0100589Baace55eE5724733824703c152d0B) | Private ETH wrapper |
-| **ZamaLinkCampaign** | [`0xE004EB22a1a6864d32664039a7325056ae15Be1c`](https://sepolia.etherscan.io/address/0xE004EB22a1a6864d32664039a7325056ae15Be1c) | Campaign management |
 
 ### Development Commands
 
@@ -212,9 +216,20 @@ NEXT_PUBLIC_NETWORK=sepolia
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Quick Links
+## Documentation
 
-- **Live Demo**:
+- [FHEVM Solidity Documentation](https://docs.zama.ai/protocol/solidity-guides)
+- [Supported encrypted types](https://docs.zama.ai/protocol/solidity-guides/smart-contract/types)
+- [Operations on encrypted types](https://docs.zama.ai/protocol/solidity-guides/smart-contract/operations)
+- [Access Control List (ACL)](https://docs.zama.ai/protocol/solidity-guides/smart-contract/acl)
+- [Encrypted inputs (externalEuintXX & FHE.fromExternal)](https://docs.zama.ai/protocol/solidity-guides/smart-contract/inputs)
+- [Decryption (Oracle: requestDecryption & checkSignatures)](https://docs.zama.ai/protocol/solidity-guides/smart-contract/oracle)
+- [Configuration & `SepoliaConfig`](https://docs.zama.ai/protocol/solidity-guides/smart-contract/configure)
+- [Relayer SDK – Overview](https://docs.zama.ai/protocol/relayer-sdk-guides)
+- [FHEVM Hardhat Quick Start Tutorial](https://docs.zama.ai/protocol/solidity-guides/getting-started/quick-start-tutorial)
+- [How to set up a FHEVM Hardhat development environment](https://docs.zama.ai/protocol/solidity-guides/getting-started/setup)
+- [Write FHEVM Tests using Hardhat](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat/write_test)
+- [Deploy contracts and run tests (Hardhat)](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat/run_test)
 
 ---
 
