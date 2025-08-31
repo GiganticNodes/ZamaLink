@@ -2,6 +2,7 @@
 
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Coins, Heart, Plus, BarChart3, Menu, X } from 'lucide-react';
@@ -68,13 +69,14 @@ export function Header() {
             <div className="px-6 py-4">
               <div className="flex items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="group flex items-center gap-3 transition-transform duration-300 hover:scale-105">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-400 rounded-2xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="relative p-2.5 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl shadow-lg">
-                      <Coins className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                    </div>
-                  </div>
+                <Link href="/" className="group flex items-center gap-3">
+                  <Image 
+                    src="/images/logo/ZamaLink Logo.png"
+                    alt="ZamaLink"
+                    width={40}
+                    height={40}
+                    className="h-8 md:h-10 w-auto"
+                  />
                   <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
                     ZamaLink
                   </span>

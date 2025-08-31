@@ -3,8 +3,11 @@ import type { Metadata } from 'next';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'ZamaLink - Web3 Donation Platform',
+  title: 'ZamaLink - Private Donation Platform',
   description: 'Support your favorite content creators with ETH donations',
+  icons: {
+    icon: '/images/favicon/favicon.png',
+  },
 };
 
 export default function RootLayout({
