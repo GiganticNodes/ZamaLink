@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Header } from '@/components/header';
 import { BackgroundEffects } from '@/components/background-effects';
 import { CampaignCard } from '@/components/campaign-card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { CampaignGridSkeleton } from '@/components/ui/campaign-skeleton';
+import { SearchBar } from '@/components/ui/search-bar';
 import { Campaign, CampaignCategory } from '@/types/creator';
 import { zlethCampaignContract } from '@/lib/zleth-contract';
 import { clearLegacyData } from '@/lib/storage';
@@ -15,6 +17,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CampaignCategory | 'ALL'>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -27,13 +30,19 @@ export default function Home() {
     
     const loadCampaigns = async () => {
       try {
-        // Try to initialize ZLETH contract system - with or without wallet
-        if (typeof window !== 'undefined' && window.ethereum) {
-          // If wallet available, use it
+        // Clear any cached campaign data to ensure fresh blockchain data
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('campaigns_cache');
+          localStorage.removeItem('contract_campaigns');
+          localStorage.removeItem('campaign_metrics_cache');
+        }
+        
+        try {
           await zlethCampaignContract.initialize(window.ethereum);
-        } else {
-          // No wallet? Use read-only mode for public data
-          await zlethCampaignContract.initializeReadOnly();
+        } catch (initError) {
+          console.warn('Could not initialize ZLETH campaign contract:', initError);
+          setCampaigns([]);
+          return;
         }
         
         const contractCampaigns = await zlethCampaignContract.getActiveCampaigns();
@@ -48,7 +57,7 @@ export default function Home() {
           targetAmount: cc.targetAmount,
           deadline: cc.deadline,
           category: cc.category,
-          publicDonatorCount: cc.publicDonatorCount,
+          publicDonatorCount: cc.publicDonorCount,
           isActive: cc.isActive,
           isCompleted: false,
           finalAmountRevealed: false,
@@ -68,10 +77,58 @@ export default function Home() {
     loadCampaigns();
   }, [mounted]);
 
+  // Filter campaigns based on search query and category
+  const filteredCampaigns = useMemo(() => {
+    return campaigns.filter(campaign => {
+      const matchesCategory = selectedCategory === 'ALL' || campaign.category === selectedCategory;
+      const matchesSearch = searchQuery === '' || 
+        campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        campaign.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [campaigns, selectedCategory, searchQuery]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="min-h-screen">
+        <BackgroundEffects />
+        <Header />
+        
+        <main className="relative z-10 pt-24 md:pt-28">
+          {/* Hero Section */}
+          <section className="container mx-auto px-4 py-6">
+            <div className="text-center space-y-2">
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-800 mb-3 leading-tight">
+                Private Donation Platform
+                <br />
+                <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
+                  with FHEVM
+                </span>
+              </h1>
+              <p className="text-base text-gray-600 mb-4 leading-relaxed">
+                Donate to meaningful campaigns with guaranteed privacy. 
+                Your donation amounts are fully encrypted using Zama FHEVM.
+              </p>
+            </div>
+          </section>
+
+          {/* Loading Skeleton */}
+          <section className="container mx-auto px-4 pb-8">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Loading Campaigns...
+              </h2>
+              <p className="text-xs md:text-sm text-gray-600 max-w-lg mx-auto">
+                Please wait while we fetch the latest campaigns
+              </p>
+            </div>
+            <CampaignGridSkeleton count={6} />
+          </section>
+        </main>
       </div>
     );
   }
@@ -81,7 +138,7 @@ export default function Home() {
       <BackgroundEffects />
       <Header />
       
-      <main className="relative z-10">
+      <main className="relative z-10 pt-24 md:pt-28">
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-6">
           <div className="text-center space-y-2">
@@ -98,6 +155,7 @@ export default function Home() {
             </p>
           </div>
         </section>
+
 
         {/* Campaign Categories Filter */}
         <section className="container mx-auto px-4 pb-4">
@@ -142,28 +200,37 @@ export default function Home() {
 
         {/* Campaigns Section */}
         <section className="container mx-auto px-4 pb-8">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              Active Campaigns
-            </h2>
-            <p className="text-xs md:text-sm text-gray-600 max-w-lg mx-auto">
-              Find campaigns you want to support
-            </p>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
+            <div className="text-center lg:text-left">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Active Campaigns
+              </h2>
+              <p className="text-xs md:text-sm text-gray-600">
+                Find campaigns you want to support
+              </p>
+            </div>
+            <div className="lg:w-96">
+              <SearchBar 
+                placeholder="Search campaigns..."
+                onSearch={handleSearch}
+                className=""
+              />
+            </div>
           </div>
 
-          {campaigns.filter(campaign => 
-            selectedCategory === 'ALL' || campaign.category === selectedCategory
-          ).length === 0 ? (
+          {filteredCampaigns.length === 0 ? (
             <div className="text-center py-16">
               <div className="neumorphic-card p-12 max-w-md mx-auto">
                 <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                  {selectedCategory === 'ALL' ? 'No Campaigns Yet' : 'No Campaigns Found'}
+                  {searchQuery ? 'No Results Found' : selectedCategory === 'ALL' ? 'No Campaigns Yet' : 'No Campaigns Found'}
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  {selectedCategory === 'ALL' 
-                    ? 'Be the first to create a fundraising campaign!' 
-                    : 'No campaigns found for this category.'
+                  {searchQuery 
+                    ? `No campaigns match "${searchQuery}". Try different keywords or browse all campaigns.`
+                    : selectedCategory === 'ALL' 
+                      ? 'Be the first to create a fundraising campaign!' 
+                      : 'No campaigns found for this category.'
                   }
                 </p>
                 <a
@@ -176,51 +243,15 @@ export default function Home() {
             </div>
           ) : (
             <>
-              {/* Stats Bar */}
-              <div className="flex justify-center mb-8">
-                <div className="bg-white rounded-lg shadow-lg p-6 flex items-center space-x-8">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-2">
-                      <Target className="w-5 h-5 text-orange-500 mr-2" />
-                      <span className="text-2xl font-bold text-gray-800">
-                        {campaigns.filter(c => selectedCategory === 'ALL' || c.category === selectedCategory).length}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">Active Campaigns</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-2">
-                      <Users className="w-5 h-5 text-blue-500 mr-2" />
-                      <span className="text-2xl font-bold text-gray-800">
-                        {campaigns.reduce((sum, c) => sum + c.publicDonatorCount, 0)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">Total Donors</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-2">
-                      <Heart className="w-5 h-5 text-red-500 mr-2" />
-                      <span className="text-2xl font-bold text-gray-800">
-                        Secret
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">Private Funds</p>
-                  </div>
-                </div>
-              </div>
-
               {/* Campaign Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {campaigns
-                  .filter(campaign => selectedCategory === 'ALL' || campaign.category === selectedCategory)
-                  .map((campaign, index) => (
-                    <CampaignCard 
-                      key={campaign.id} 
-                      campaign={campaign} 
-                      index={index}
-                    />
-                  ))
-                }
+                {filteredCampaigns.map((campaign, index) => (
+                  <CampaignCard 
+                    key={campaign.id} 
+                    campaign={campaign} 
+                    index={index}
+                  />
+                ))}
               </div>
             </>
           )}
