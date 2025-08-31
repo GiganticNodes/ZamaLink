@@ -94,9 +94,12 @@ export default function CreatorPage() {
       <div className="min-h-screen">
         <BackgroundEffects />
         <Header />
-        <div className="flex items-center justify-center py-32">
-          <LoadingSpinner size="lg" />
-        </div>
+        <main className="relative z-10 container mx-auto px-4 py-16 pt-24 md:pt-28">
+          <div className="flex flex-col items-center justify-center min-h-[50vh]">
+            <LoadingSpinner size="lg" />
+            <p className="mt-4 text-lg text-gray-600">Loading creator profile...</p>
+          </div>
+        </main>
       </div>
     );
   }
@@ -146,7 +149,7 @@ export default function CreatorPage() {
       <BackgroundEffects />
       <Header />
       
-      <main className="relative z-10 container mx-auto px-4 py-16">
+      <main className="relative z-10 container mx-auto px-4 py-16 pt-24 md:pt-28">
         <div className="max-w-4xl mx-auto">
           {/* Creator Header */}
           <div className="neumorphic-card p-8 mb-8">

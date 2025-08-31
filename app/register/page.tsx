@@ -98,7 +98,7 @@ export default function RegisterPage() {
       <BackgroundEffects />
       <Header />
       
-      <main className="relative z-10 container mx-auto px-4 py-16">
+      <main className="relative z-10 container mx-auto px-4 py-16 pt-24 md:pt-28">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-neumorphic shadow-neumorphic mb-6">
@@ -125,9 +125,9 @@ export default function RegisterPage() {
                 </p>
               </div>
             ) : submitStatus === 'success' ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-white" />
+              <div className="flex flex-col items-center justify-center min-h-[40vh] py-8">
+                <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <CheckCircle className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
                   Registration Successful!
@@ -213,10 +213,13 @@ export default function RegisterPage() {
                 </div>
 
                 {submitStatus === 'error' && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-neumorphic">
-                    <div className="flex items-center">
-                      <AlertCircle className="w-5 h-5 text-red-400 mr-2" />
-                      <p className="text-sm text-red-700">{errorMessage}</p>
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-2xl">
+                    <div className="flex items-start space-x-3">
+                      <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-medium text-red-800 mb-1">Registration Failed</h4>
+                        <p className="text-sm text-red-700">{errorMessage}</p>
+                      </div>
                     </div>
                   </div>
                 )}
