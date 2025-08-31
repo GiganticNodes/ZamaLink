@@ -5,7 +5,7 @@ import { Campaign, getCategoryDisplayName, formatTimeLeft, formatDonatorCount } 
 import { ExternalLink, Clock, Target, Users, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { DonationModal } from './donation-modal';
+import { PrivateDonationModal } from './private-donation-modal';
 
 interface CampaignCardProps {
   campaign: Campaign;
@@ -29,7 +29,8 @@ const CampaignCard = memo(function CampaignCard({ campaign, index }: CampaignCar
   }, []);
 
   const handleDonationSuccess = useCallback((txHash: string, amount: string) => {
-    console.log('Donation success:', { txHash, amount });
+    console.log('Private donation success:', { txHash, amount });
+    console.log('🔐 Private donation completed - amount encrypted with ZLETH');
   }, []);
 
   const getCategoryColor = (category: Campaign['category']) => {
@@ -184,7 +185,7 @@ const CampaignCard = memo(function CampaignCard({ campaign, index }: CampaignCar
         </div>
       </div>
 
-      <DonationModal
+            <PrivateDonationModal 
         campaign={campaign}
         isOpen={isDonationModalOpen}
         onClose={handleCloseModal}

@@ -40,21 +40,11 @@ const CreatorCard = memo(function CreatorCard({ creator, index }: CreatorCardPro
           <Link href={`/creator/${creator.id}`}>
             <div className="relative cursor-pointer">
               <div className="w-20 h-20 rounded-full overflow-hidden shadow-neumorphic">
-                {creator.avatar ? (
-                  <Image
-                    src={creator.avatar}
-                    alt={creator.name}
-                    width={80}
-                    height={80}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">
-                      {creator.name.charAt(0)}
-                    </span>
-                  </div>
-                )}
+                <div className="w-full h-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">
+                    {creator.name.charAt(0)}
+                  </span>
+                </div>
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-white shadow-sm" />
             </div>
@@ -77,40 +67,9 @@ const CreatorCard = memo(function CreatorCard({ creator, index }: CreatorCardPro
             )}
           </div>
 
-          {/* Social Links */}
+          {/* Social Links - Hidden until creator profiles are implemented */}
           <div className="flex space-x-3">
-            {creator.twitterHandle && (
-              <a
-                href={`https://twitter.com/${creator.twitterHandle}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-blue-100 hover:bg-blue-200 rounded-neumorphic transition-colors"
-              >
-                <Twitter className="w-4 h-4 text-blue-500" />
-              </a>
-            )}
-            
-            {creator.farcasterUsername && (
-              <a
-                href={`https://farcaster.xyz/${creator.farcasterUsername}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-purple-100 hover:bg-purple-200 rounded-neumorphic transition-colors"
-              >
-                <ExternalLink className="w-4 h-4 text-purple-500" />
-              </a>
-            )}
-            
-            {creator.youtubeChannel && (
-              <a
-                href={`https://youtube.com/channel/${creator.youtubeChannel}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-red-100 hover:bg-red-200 rounded-neumorphic transition-colors"
-              >
-                <Youtube className="w-4 h-4 text-red-500" />
-              </a>
-            )}
+            {/* Social links temporarily disabled */}
           </div>
 
           {/* Stats */}

@@ -44,7 +44,7 @@ export const donationStorage = {
 
   getByCreator: (creatorId: string): Donation[] => {
     const donations = donationStorage.getAll();
-    return donations.filter(d => d.creatorId === creatorId);
+    return donations.filter(d => d.campaignId === creatorId);
   },
 
   save: (donation: Donation): void => {
@@ -63,8 +63,48 @@ export const donationStorage = {
 };
 
 // Initialize with some sample creators
+// Campaign storage for caching blockchain data
+export const campaignStorage = {
+  getAll: () => {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem('campaigns_cache');
+    return stored ? JSON.parse(stored) : [];
+  },
+  
+  clear: () => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem('campaigns_cache');
+  },
+  
+  save: (campaigns: any[]) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('campaigns_cache', JSON.stringify(campaigns));
+  }
+};
+
+// Clear old campaign data and system cache
+export const clearLegacyData = () => {
+  if (typeof window === 'undefined') return;
+  
+  console.log('🧹 Clearing legacy campaign data...');
+  
+  // Remove old campaign cache
+  localStorage.removeItem('campaigns_cache');
+  localStorage.removeItem('legacy_campaigns');
+  localStorage.removeItem('contract_campaigns');
+  
+  // Clear any cached contract data
+  localStorage.removeItem('campaign_metrics_cache');
+  localStorage.removeItem('donation_cache');
+  
+  console.log('✅ Legacy data cleared - now using ZLETH system only');
+};
+
 export const initializeSampleData = () => {
   if (typeof window === 'undefined') return;
+  
+  // Clear legacy data first
+  clearLegacyData();
   
   const existing = creatorStorage.getAll();
   if (existing.length === 0) {
@@ -73,10 +113,6 @@ export const initializeSampleData = () => {
         id: '1',
         name: 'Alex Crypto',
         walletAddress: '0x1234567890123456789012345678901234567890',
-        twitterHandle: 'alexcrypto',
-        farcasterUsername: 'alexcrypto',
-        youtubeChannel: 'UC_AlexCrypto',
-        avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
         description: 'Web3 educator and blockchain enthusiast',
         totalDonations: '0',
         donationCount: 0,
@@ -86,10 +122,6 @@ export const initializeSampleData = () => {
         id: '2',
         name: 'Sarah DeFi',
         walletAddress: '0x2345678901234567890123456789012345678901',
-        twitterHandle: 'sarahdefi',
-        farcasterUsername: 'sarahdefi',
-        youtubeChannel: 'UC_SarahDeFi',
-        avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
         description: 'DeFi protocols and yield farming expert',
         totalDonations: '0',
         donationCount: 0,
@@ -99,10 +131,6 @@ export const initializeSampleData = () => {
         id: '3',
         name: 'Mike NFT',
         walletAddress: '0x3456789012345678901234567890123456789012',
-        twitterHandle: 'mikenft',
-        farcasterUsername: 'mikenft',
-        youtubeChannel: 'UC_MikeNFT',
-        avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
         description: 'NFT collector and digital art curator',
         totalDonations: '0',
         donationCount: 0,
