@@ -284,7 +284,7 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
         args: [formattedTargetId, isAnonymous],
         value: amount + ' ETH',
         isConnected,
-        address
+        userAddress: address
       });
 
       writeContract({
