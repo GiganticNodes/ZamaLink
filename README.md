@@ -2,7 +2,7 @@
 
 **Complete privacy for crypto donations using Zama FHEVM technology**
 
-ZamaLink is a revolutionary crowdfunding platform that enables **fully private donations** using advanced FHEVM (Fully Homomorphic Encryption Virtual Machine) technology. Campaign organizers can raise funds while keeping all donation amounts completely encrypted and private until claimed.
+ZamaLink is a revolutionary crowdfunding platform that enables **fully private donations** using advanced Fully Homomorphic Encryption (FHEVM) technology from Zama. Campaign organizers can raise funds while keeping all donation amounts completely encrypted and private until claimed, ensuring unprecedented privacy in decentralized fundraising.
 
 ## Smart Contracts (Sepolia Testnet)
 
@@ -91,8 +91,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
-
-
 
 ### Development Commands
 
