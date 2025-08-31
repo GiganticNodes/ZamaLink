@@ -12,7 +12,7 @@ ZamaLink is a revolutionary crowdfunding platform that enables **fully private d
 | **ZLETHWrapper** | [`0xC92A0100589Baace55eE5724733824703c152d0B`](https://sepolia.etherscan.io/address/0xC92A0100589Baace55eE5724733824703c152d0B) | Private ETH wrapper |
 | **ZamaLinkCampaign** | [`0xE004EB22a1a6864d32664039a7325056ae15Be1c`](https://sepolia.etherscan.io/address/0xE004EB22a1a6864d32664039a7325056ae15Be1c) | Campaign management |
 
-- ### Live Demo: [zama-link.vercel.app](https://zamalink.vercel.app/)
+- ### Live Demo: [zamalink.vercel.app](https://zamalink.vercel.app/)
 
 ## Features
 
