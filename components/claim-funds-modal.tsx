@@ -66,7 +66,7 @@ export function ClaimFundsModal({ campaign, isOpen, onClose, onSuccess }: ClaimF
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center space-x-2">
@@ -112,19 +112,17 @@ export function ClaimFundsModal({ campaign, isOpen, onClose, onSuccess }: ClaimF
               </div>
 
               {/* Warning */}
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                <div className="flex items-start space-x-3">
-                  <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-medium text-orange-800">Important Notes</h4>
-                    <ul className="text-sm text-orange-700 mt-2 space-y-1">
-                      <li>• This will withdraw ALL your ZLETH balance (all donations)</li>
-                      <li>• Works by directly accessing your private ZLETH tokens</li>
-                      <li>• Conversion uses Zama FHEVM oracle and may take 1-2 minutes</li>
-                      <li>• Only works if you have received donations to your campaign</li>
-                    </ul>
-                  </div>
-                </div>
+              <div className="bg-orange-50 rounded-xl p-4">
+                <h4 className="font-medium text-orange-800 mb-3 flex items-center space-x-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Important Notes</span>
+                </h4>
+                <ol className="text-sm text-orange-700 space-y-2 list-decimal list-inside">
+                  <li>This will withdraw ALL your ZLETH balance (all donations)</li>
+                  <li>Works by directly accessing your private ZLETH tokens</li>
+                  <li>Conversion uses Zama FHEVM oracle and may take 1-2 minutes</li>
+                  <li>Only works if you have received donations to your campaign</li>
+                </ol>
               </div>
 
               {/* Confirm Button */}
@@ -159,10 +157,10 @@ export function ClaimFundsModal({ campaign, isOpen, onClose, onSuccess }: ClaimF
               <div className="bg-blue-50 rounded-xl p-4 text-left">
                 <h4 className="font-medium text-blue-800 mb-2">What's happening:</h4>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>🔐 Accessing your private ZLETH balance</li>
-                  <li>🔄 Converting ZLETH to ETH via Zama oracle</li>
-                  <li>💰 Transferring ETH to your wallet</li>
-                  <li>⏱️ Process may take 1-2 minutes to complete</li>
+                  <li>• Accessing your private ZLETH balance</li>
+                  <li>• Converting ZLETH to ETH via Zama oracle</li>
+                  <li>• Transferring ETH to your wallet</li>
+                  <li>• Process may take 1-2 minutes to complete</li>
                 </ul>
               </div>
             </div>
