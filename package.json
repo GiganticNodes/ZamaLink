@@ -124,7 +124,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "optionalDependencies": {
     "pino-pretty": "^13.1.1"
   }

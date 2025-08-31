@@ -36,20 +36,38 @@ ZamaLink is a revolutionary crowdfunding platform that enables **fully private d
 
 ## Tech Stack
 
-### Frontend
-- **Next.js 15** with React 18 and TypeScript
-- **RainbowKit & Wagmi** for Web3 wallet connectivity
-- **TailwindCSS** with shadcn/ui components
-- **Ethers.js** for blockchain interactions
+### Frontend Framework
+- **Next.js 15** - React full-stack framework with App Router
+- **React 18** - UI library with modern hooks and concurrent features
+- **TypeScript** - Type-safe JavaScript with enhanced developer experience
+
+### Web3 & Blockchain
+- **RainbowKit 2.2.8** - Beautiful wallet connection with multi-wallet support
+- **Wagmi 2.16.8** - React hooks for Ethereum interactions
+- **Ethers.js 6.15.0** - Ethereum library for smart contract interactions
+- **Viem 2.36.0** - Type-safe Ethereum client
+
+### UI/UX Libraries
+- **TailwindCSS 3.4.0** - Utility-first CSS framework
+- **Radix UI** - Comprehensive set of accessible UI primitives:
+  - Dialog, Dropdown, Toast, Form components
+  - Navigation, Accordion, Tabs, Calendar
+  - Alert Dialog, Context Menu, and more
+- **Shadcn/ui** - Beautiful component library built on Radix UI
+- **Lucide React** - Beautiful SVG icon library
+- **Motion 12.0.0** - Framer Motion animations
 
 ### Smart Contracts
-- **Solidity 0.8.24** with Zama FHEVM extensions
-- **ZamaLinkCampaign.sol** - Main campaign management
-- **ZLETHWrapper.sol** - Private ETH wrapper with FHEVM
-- **Hardhat** development environment
+- **Solidity 0.8.24** - Smart contract programming language
+- **Hardhat 2.26.3** - Ethereum development environment
+- **OpenZeppelin Contracts 5.4.0** - Secure smart contract library
+- **OpenZeppelin Confidential 0.1.0** - Privacy-focused contract utilities
 
-### Privacy Technology
-- **Zama FHEVM** - Fully Homomorphic Encryption
+### Privacy Technology Architecture
+- **Zama FHEVM** - Fully Homomorphic Encryption Virtual Machine
+- **ZLETH Wrapper** - Private ETH with encrypted balances
+- **Encrypted Data Types** - euint32, euint64, euint128, ebool
+- **Oracle Integration** - Secure decryption via Zama oracle network
 
 ## Quick Start
 
