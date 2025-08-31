@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
 import { Campaign, Creator } from '@/types/creator';
 import { useAccount, useWriteContract } from 'wagmi';
@@ -28,18 +28,113 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
   const targetTitle = campaign?.title || creator?.name || 'Unknown';
   const targetAddress = campaign?.organizerAddress || creator?.walletAddress || '';
 
-  const { address, isConnected } = useAccount();
-  const { writeContract, data: hash, isPending } = useWriteContract();
-
-  // Watch for transaction hash and update state
-  useEffect(() => {
-    if (hash && step === 'confirming') {
-      setTxHash(hash);
-      setStep('success');
-      onSuccess?.(hash, amount);
-      setIsLoading(false);
+  // Format error messages for better UX
+  const formatErrorMessage = (error: any): string => {
+    const errorMessage = error.message || error.toString();
+    
+    // Handle MetaMask user rejection
+    if (errorMessage.includes('User denied') || 
+        errorMessage.includes('User rejected') ||
+        errorMessage.includes('user rejected transaction') ||
+        errorMessage.includes('Transaction was rejected')) {
+      return 'Transaction cancelled - You rejected the transaction in MetaMask. Click "Try Again" to retry.';
     }
-  }, [hash, step, amount, onSuccess]);
+    
+    // Handle insufficient funds
+    if (errorMessage.includes('insufficient funds')) {
+      return 'Insufficient funds in your wallet. Please add more ETH to your wallet.';
+    }
+    
+    // Handle network errors
+    if (errorMessage.includes('network') || errorMessage.includes('connection')) {
+      return 'Network connection issue. Please check your internet connection and try again.';
+    }
+    
+    // Handle gas estimation errors
+    if (errorMessage.includes('gas') && errorMessage.includes('estimation')) {
+      return 'Transaction may fail. Please check the campaign is still active and try with a higher gas limit.';
+    }
+    
+    // Handle contract errors
+    if (errorMessage.includes('execution reverted')) {
+      return 'Smart contract error - The campaign may be inactive or you may not meet the requirements.';
+    }
+    
+    // Default fallback with shortened error for readability
+    return errorMessage.length > 150 
+      ? errorMessage.substring(0, 150) + '...' 
+      : errorMessage;
+  };
+
+  const { address, isConnected } = useAccount();
+  const { 
+    writeContract, 
+    data: hash, 
+    isPending, 
+    reset: resetWriteContract, 
+    error: writeError, 
+    status 
+  } = useWriteContract({
+    mutation: {
+      onSuccess: (data) => {
+        console.log('✅ WriteContract Success:', data);
+        setTxHash(data);
+        setStep('success');
+        onSuccess?.(data, amount);
+        setIsLoading(false);
+      },
+      onError: (error) => {
+        console.error('❌ WriteContract Error:', error);
+        const friendlyError = formatErrorMessage(error);
+        setError(friendlyError);
+        setStep('error');
+        setIsLoading(false);
+      }
+    }
+  });
+
+  // Simplified force reset wagmi state 
+  const forceResetWagmi = useCallback(() => {
+    try {
+      resetWriteContract();
+      console.log('Wagmi state reset successful');
+    } catch (error) {
+      console.warn('Wagmi reset error:', error);
+    }
+  }, [resetWriteContract]);
+
+  // Monitor writeContract status for debugging
+  useEffect(() => {
+    console.log('Wagmi Status:', { status, isPending, hash, writeError: writeError?.message });
+  }, [status, isPending, hash, writeError]);
+
+  // Reset wagmi state when modal opens - CRITICAL FIX
+  useEffect(() => {
+    if (isOpen) {
+      // Always reset when modal opens regardless of step
+      forceResetWagmi();
+      setError('');
+      setTxHash('');
+      if (step !== 'input') {
+        setStep('input');
+      }
+    }
+  }, [isOpen, forceResetWagmi]);
+
+  // CRITICAL: Reset state when wallet changes - this fixes multiple wallet issue
+  useEffect(() => {
+    if (address) {
+      forceResetWagmi();
+      setError('');
+      setTxHash('');
+      console.log('Wallet changed, resetting state for:', address);
+    }
+  }, [address, forceResetWagmi]);
+  
+  // Monitor wagmi status dan error untuk debugging
+  useEffect(() => {
+    console.log('Wagmi Status:', { status, hash, error: writeError, isPending });
+  }, [status, hash, writeError, isPending]);
 
   const validateAmount = (value: string): boolean => {
     const num = parseFloat(value);
@@ -78,11 +173,62 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
         // For campaigns
         targetId = campaign.id;
         
+        // Initialize read-only contract untuk validation
+        await privateCampaignDonationContract.initializeReadOnly();
+        
         // Check if campaign exists and is active
         const campaignInfo = await privateCampaignDonationContract.getCampaignInfo(targetId);
-        if (!campaignInfo?.isActive) {
-          throw new Error(`Kampanye ${campaign.title} tidak aktif atau tidak ditemukan.`);
+        
+        console.log('DEBUG - Campaign info dari contract:', {
+          targetId,
+          targetIdType: typeof targetId,
+          targetIdLength: targetId.length,
+          campaignInfo,
+          exists: campaignInfo !== null,
+          campaignTitle: campaign.title,
+          organizerAddress: campaign.organizerAddress
+        });
+        
+        // Test juga dengan manual campaign ID generation
+        const manualId = privateCampaignDonationContract.generateCampaignId(campaign.title, campaign.organizerAddress);
+        console.log('DEBUG - Manual ID generation:', {
+          originalId: targetId,
+          manualId,
+          idsMatch: targetId === manualId
+        });
+        
+        if (!campaignInfo) {
+          throw new Error(`Campaign tidak ditemukan di smart contract. Campaign ID: ${targetId}`);
         }
+        
+        if (!campaignInfo.isActive) {
+          throw new Error(`Campaign "${campaign.title}" sudah tidak aktif.`);
+        }
+
+        // Additional checks for debugging
+        const now = Math.floor(Date.now() / 1000);
+        if (campaignInfo.deadline && campaignInfo.deadline < now) {
+          throw new Error(`Campaign "${campaign.title}" sudah expired (deadline: ${new Date(campaignInfo.deadline * 1000).toLocaleString()})`);
+        }
+
+        const donationAmount = parseFloat(amount);
+        if (donationAmount <= 0) {
+          throw new Error('Jumlah donasi harus lebih dari 0');
+        }
+        if (donationAmount > 10) {
+          throw new Error('Jumlah donasi tidak boleh melebihi 10 ETH');
+        }
+
+        console.log('DEBUG - Campaign validation passed:', {
+          campaignId: targetId,
+          isActive: campaignInfo.isActive,
+          deadline: campaignInfo.deadline,
+          now: now,
+          expired: campaignInfo.deadline < now,
+          organizer: campaignInfo.organizer,
+          amount: donationAmount,
+          currentAddress: address
+        });
       } else if (creator) {
         // Legacy creator support - generate creator ID
         targetId = privateCampaignDonationContract.generateCampaignId(creator.name, creator.walletAddress);
@@ -93,12 +239,54 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
         throw new Error('No valid campaign or creator provided');
       }
 
-      // Get contract address
-      const CONTRACT_ADDRESS = "0xAD9c503F9AC5c2fA8152B8699f8db469B5a8809F";
+      // Get contract address - UPDATED after redeployment  
+      const CONTRACT_ADDRESS = "0x2Ab89Ee2092d1ccd652Da1360C36Da7bf9A200Ef";
       
-      // Call smart contract donateSimple function for privacy
-      // Flow: User -> Smart Contract -> Organizer (maintains privacy & audit trail)
+      // Single reset before transaction - SIMPLIFIED
+      forceResetWagmi();
       
+      // Call public donation function (non-FHE path)
+      // Flow: User -> Smart Contract -> Organizer (fast and reliable)
+      
+      console.log('⚡ Starting public donation:', {
+        campaignId: targetId,
+        isAnonymous,
+        valueInEth: amount,
+        currentUserAddress: address,
+        organizerAddress: campaign?.organizerAddress
+      });
+      
+      // Validate campaign exists and is active
+      try {
+        const testInfo = await privateCampaignDonationContract.getCampaignInfo(targetId);
+        if (!testInfo) {
+          throw new Error(`Campaign tidak ditemukan di smart contract.`);
+        }
+        
+        console.log('✅ Campaign validation passed:', {
+          campaignExists: true,
+          isActive: testInfo.isActive,
+          organizer: testInfo.organizer
+        });
+        
+      } catch (testError) {
+        console.error('❌ Contract validation failed:', testError);
+        throw new Error(`Contract validation failed: ${testError instanceof Error ? testError.message : String(testError)}`);
+      }
+      
+      // Call donatePublic function (non-FHE path)
+      // Ensure targetId is properly formatted as bytes32
+      const formattedTargetId = targetId.startsWith('0x') ? targetId : `0x${targetId}`;
+      
+      console.log('🚀 Calling writeContract with:', {
+        address: CONTRACT_ADDRESS,
+        functionName: 'donatePublic',
+        args: [formattedTargetId, isAnonymous],
+        value: amount + ' ETH',
+        isConnected,
+        address
+      });
+
       writeContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         abi: [
@@ -107,20 +295,23 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
               {"internalType": "bytes32", "name": "campaignId", "type": "bytes32"},
               {"internalType": "bool", "name": "isAnonymous", "type": "bool"}
             ],
-            "name": "donateSimple",
+            "name": "donatePublic",
             "outputs": [],
             "stateMutability": "payable",
             "type": "function"
           }
         ],
-        functionName: 'donateSimple',
-        args: [targetId as `0x${string}`, isAnonymous],
+        functionName: 'donatePublic',
+        args: [formattedTargetId as `0x${string}`, isAnonymous],
         value: parseEther(amount),
       });
+      
+      console.log('📝 WriteContract call initiated');
 
     } catch (err: any) {
       console.error('Donation failed:', err);
-      setError(err.message || 'Transaction failed');
+      const friendlyError = formatErrorMessage(err);
+      setError(friendlyError);
       setStep('error');
       setIsLoading(false);
     }
@@ -132,6 +323,10 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
     setTxHash('');
     setStep('input');
     setIsLoading(false);
+    setIsAnonymous(false);
+    
+    // Single reset - no more conflicting timeouts
+    forceResetWagmi();
   };
 
   const handleClose = () => {
@@ -164,12 +359,12 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    {campaign ? `Dukung ${targetTitle}` : `Dukung ${targetTitle}`}
+                    {campaign ? `Support ${targetTitle}` : `Support ${targetTitle}`}
                   </h2>
                   <p className="text-gray-600">
                     {campaign 
-                      ? 'Donasi Anda akan langsung diteruskan ke penyelenggara kampanye'
-                      : 'Kirim ETH langsung ke wallet mereka di Sepolia testnet'
+                      ? 'Your donation will be sent directly to the campaign organizer'
+                      : 'Send ETH directly to their wallet on Sepolia testnet'
                     }
                   </p>
                 </div>
@@ -205,31 +400,11 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
                     ))}
                   </div>
 
-                  {campaign && (
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          id="anonymous"
-                          type="checkbox"
-                          checked={isAnonymous}
-                          onChange={(e) => setIsAnonymous(e.target.checked)}
-                          className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"
-                        />
-                        <label htmlFor="anonymous" className="text-sm text-gray-700">
-                          Donasi secara anonim
-                        </label>
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        Jika dicentang, identitas Anda akan disembunyikan dari publik
-                      </p>
-                    </div>
-                  )}
-
                   <div className="text-xs text-gray-500 bg-yellow-50 p-3 rounded-neumorphic">
-                    <p>⚠️ Ini adalah Sepolia testnet. Gunakan hanya test ETH.</p>
-                    <p>Penerima: {targetAddress.slice(0, 20)}...</p>
+                    <p>This is Sepolia testnet. Use only test ETH.</p>
+                    <p>Recipient: {targetAddress.slice(0, 20)}...</p>
                     {campaign && (
-                      <p className="mt-1">💰 Jumlah donasi Anda akan tetap rahasia dari publik</p>
+                      <p className="mt-1">Your donation amount will remain private from the public</p>
                     )}
                   </div>
                 </div>
@@ -263,7 +438,7 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
                     Confirming Transaction
                   </h2>
                   <p className="text-gray-600">
-                    Harap konfirmasi transaksi di wallet Anda...
+                    Please confirm the transaction in your wallet...
                   </p>
                 </div>
               </div>
@@ -278,10 +453,10 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-2">
-                    Donation Sent! 🎉
+                    Donation Sent!
                   </h2>
                   <p className="text-gray-600 mb-4">
-                    Donasi {amount} ETH Anda untuk {targetTitle} telah berhasil dikirim.
+                    Your donation of {amount} ETH to {targetTitle} has been successfully sent.
                   </p>
                   {txHash && (
                     <a
@@ -307,28 +482,43 @@ export function DonationModal({ campaign, creator, isOpen, onClose, onSuccess }:
             {step === 'error' && (
               <div className="text-center space-y-6">
                 <div
-                  className="mx-auto w-16 h-16 bg-red-400 rounded-full flex items-center justify-center"
+                  className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center ${
+                    error.includes('cancelled') || error.includes('rejected')
+                      ? 'bg-yellow-400' // Yellow for user cancellation
+                      : 'bg-red-400'   // Red for actual errors
+                  }`}
                 >
                   <AlertCircle className="w-8 h-8 text-white" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-2">
-                    Transaction Failed
+                    {error.includes('cancelled') || error.includes('rejected')
+                      ? 'Transaction Cancelled'
+                      : 'Transaction Failed'
+                    }
                   </h2>
                   <p className="text-gray-600 text-sm mb-4">
                     {error}
                   </p>
+                  {(error.includes('cancelled') || error.includes('rejected')) && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      💡 No worries! This happens when you click "Reject" in MetaMask. Just try again when ready.
+                    </p>
+                  )}
                 </div>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => setStep('input')}
-                    className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-neumorphic transition-colors"
+                    className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 rounded-neumorphic transition-colors font-medium"
                   >
-                    Try Again
+                    {error.includes('cancelled') || error.includes('rejected') 
+                      ? 'Try Again' 
+                      : 'Retry'
+                    }
                   </button>
                   <button
                     onClick={handleClose}
-                    className="w-full neumorphic-button-secondary px-6 py-3 font-bold"
+                    className="flex-1 py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-neumorphic transition-colors"
                   >
                     Close
                   </button>

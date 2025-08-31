@@ -201,7 +201,7 @@ export function PrivateDonationModal({ campaign, isOpen, onClose, onSuccess }: P
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pt-20 md:pt-24">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-white/20 backdrop-blur-md"
@@ -279,24 +279,6 @@ export function PrivateDonationModal({ campaign, isOpen, onClose, onSuccess }: P
                     ))}
                   </div>
 
-                  {/* Anonymous option */}
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        id="anonymous"
-                        type="checkbox"
-                        checked={isAnonymous}
-                        onChange={(e) => setIsAnonymous(e.target.checked)}
-                        className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"
-                      />
-                      <label htmlFor="anonymous" className="text-sm text-gray-700">
-                        Donate anonymously
-                      </label>
-                    </div>
-                    <p className="text-xs text-gray-500 ml-6">
-                      Hide your wallet address from the public donation history
-                    </p>
-                  </div>
 
                   {/* Warning */}
                   <div className="text-xs text-gray-500 bg-yellow-50 p-3 rounded-xl">
