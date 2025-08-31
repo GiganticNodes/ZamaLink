@@ -1,8 +1,5 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types/index.js";
-import { DeployFunction } from "hardhat-deploy/types";
-
-const deployPrivateDonation: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { deployments, getNamedAccounts, ethers } = hre as any;
+const deployPrivateDonation = async function (hre) {
+  const { deployments, getNamedAccounts, ethers } = hre;
   const { deploy } = deployments;
 
   const { deployer } = await getNamedAccounts();
@@ -37,9 +34,12 @@ const deployPrivateDonation: DeployFunction = async function (hre: HardhatRuntim
 
   console.log("\nDeploying PrivateDonation contract...");
 
-  const privateDonation = await deploy("PrivateDonation", {
+  // Placeholder token address for Sepolia - in production, deploy actual confidential ERC20
+  const PLACEHOLDER_TOKEN = "0x0000000000000000000000000000000000000001"; // Placeholder address
+  
+  const privateDonation = await deploy("PrivateCampaignDonation", {
     from: deployer,
-    args: [], // No constructor arguments needed
+    args: [PLACEHOLDER_TOKEN], // Constructor needs IConfidentialERC20 token address
     log: true,
     autoMine: true,
     gasLimit: 6000000, // Set higher gas limit for complex contract
@@ -69,6 +69,7 @@ const deployPrivateDonation: DeployFunction = async function (hre: HardhatRuntim
       await hre.run("verify:verify", {
         address: privateDonation.address,
         constructorArguments: [],
+        contract: "contracts/PrivateDonation.sol:PrivateCampaignDonation",
       });
       console.log("Contract verified on Etherscan!");
     } catch (error) {
@@ -80,6 +81,7 @@ const deployPrivateDonation: DeployFunction = async function (hre: HardhatRuntim
   return true;
 };
 
-export default deployPrivateDonation;
+module.exports = deployPrivateDonation;
+deployPrivateDonation.id = "deploy_private_campaign_donation";
 deployPrivateDonation.tags = ["PrivateDonation", "main"];
 deployPrivateDonation.dependencies = [];
