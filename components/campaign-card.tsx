@@ -95,7 +95,7 @@ const CampaignCard = memo(function CampaignCard({ campaign, index }: CampaignCar
 
           {/* Campaign Description */}
           <p 
-            className="w-full text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            className="w-full text-sm text-gray-600 hover:text-gray-800 transition-colors line-clamp-3 mb-4 min-h-[3.75rem]"
           >
             {campaign.description}
           </p>
