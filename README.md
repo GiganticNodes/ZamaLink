@@ -1,6 +1,6 @@
 # ZamaLink - Private Donation Platform
 
-ZamaLink is a private donation platform powered by Zama FHEVM. Every donation is converted into encrypted tokens (ZLETH) and transferred confidentially, ensuring full end-to-end privacy of donor identity and donation amount.
+ZamaLink is a private donation platform powered by Zama FHEVM. Every ETH donation is converted into encrypted tokens (ZLETH) and transferred confidentially, ensuring full end-to-end privacy of donor identity and donation amount.
 
 ## Smart Contracts (Sepolia Testnet)
 
