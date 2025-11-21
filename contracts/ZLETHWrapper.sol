@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {SepoliaConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
+import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 import {FHE, externalEuint64, euint64} from "@fhevm/solidity/lib/FHE.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -11,7 +11,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
  * @notice Private ETH wrapper using Zama FHEVM technology
  * @dev Converts ETH to ZLETH with encrypted balances for private transfers
  */
-contract ZLETHWrapper is SepoliaConfig, ReentrancyGuard {
+contract ZLETHWrapper is ZamaEthereumConfig, ReentrancyGuard {
     uint8 private immutable DECIMALS;
     uint256 private immutable RATE;
     
@@ -21,14 +21,14 @@ contract ZLETHWrapper is SepoliaConfig, ReentrancyGuard {
     /// @dev Encrypted balances mapping
     mapping(address => euint64) private _balances;
     
-    /// @dev Gateway decryption request ID to ETH receiver mapping
-    mapping(uint256 requestID => address receiver) private _receivers;
+    /// @dev Pending withdrawal mapping: user => encrypted ZLETH amount
+    mapping(address => euint64) private _pendingWithdrawals;
 
     /// @dev Total ETH locked in the contract (for accounting)
     uint256 public totalEthLocked;
 
     event ETHWrapped(address indexed user, uint256 ethAmount, uint64 zlethAmount);
-    event UnwrapRequested(address indexed user, uint256 requestId);
+    event UnwrapRequested(address indexed user, euint64 encryptedAmount);
     event ETHUnwrapped(address indexed user, uint256 ethAmount);
 
     error InsufficientETH();
@@ -122,47 +122,55 @@ contract ZLETHWrapper is SepoliaConfig, ReentrancyGuard {
     }
 
     /**
-     * @dev Internal withdraw logic
+     * @dev Internal withdraw logic - NEW v0.9 flow
+     * Step 1: Mark amount as publicly decryptable
      */
     function _withdraw(address from, address to, euint64 amount) internal {
         if (to == address(0)) revert InvalidReceiver();
 
-        // Burn the ZLETH tokens
+        // Burn the ZLETH tokens first
         _balances[from] = FHE.sub(_balances[from], amount);
         FHE.allowThis(_balances[from]);
         FHE.allow(_balances[from], from);
 
-        // Request decryption via FHEVM oracle
-        bytes32[] memory cts = new bytes32[](1);
-        cts[0] = euint64.unwrap(amount);
-        uint256 requestID = FHE.requestDecryption(cts, this.finalizeWithdraw.selector);
+        // Mark encrypted amount as publicly decryptable
+        FHE.makePubliclyDecryptable(amount);
+        
+        // Store pending withdrawal for this user
+        _pendingWithdrawals[from] = amount;
+        FHE.allowThis(_pendingWithdrawals[from]);
 
-        // Register who will receive the ETH
-        _receivers[requestID] = to;
-
-        emit UnwrapRequested(from, requestID);
+        emit UnwrapRequested(from, amount);
     }
 
     /**
-     * @notice Oracle callback to finalize ETH withdrawal
-     * @param requestID Decryption request ID
-     * @param zlethAmount Decrypted ZLETH amount
-     * @param signatures Oracle signatures
-     * @dev Called by the FHEVM gateway after decryption
+     * @notice Finalize withdrawal with decrypted amount - NEW v0.9 flow
+     * @param to Address to receive ETH
+     * @param zlethAmount Decrypted ZLETH amount (from off-chain decryption)
+     * @param decryptionProof Proof from relayer SDK
+     * @dev Step 2: User sends cleartext + proof back after off-chain decryption
      */
     function finalizeWithdraw(
-        uint256 requestID, 
-        uint64 zlethAmount, 
-        bytes[] memory signatures
-    ) public {
-        // Verify oracle signatures
-        FHE.checkSignatures(requestID, signatures);
+        address to,
+        uint64 zlethAmount,
+        bytes calldata decryptionProof
+    ) public nonReentrant {
+        if (to == address(0)) revert InvalidReceiver();
         
-        address to = _receivers[requestID];
-        if (to == address(0)) revert InvalidRequest();
+        // Get pending withdrawal for caller
+        euint64 encryptedAmount = _pendingWithdrawals[msg.sender];
+        require(euint64.unwrap(encryptedAmount) != 0, "No pending withdrawal");
         
-        // Clean up
-        delete _receivers[requestID];
+        // Verify decryption proof
+        bytes32[] memory handles = new bytes32[](1);
+        handles[0] = FHE.toBytes32(encryptedAmount);
+        bytes memory abiClear = abi.encode(zlethAmount);
+        
+        // This will revert if proof is invalid
+        FHE.checkSignatures(handles, abiClear, decryptionProof);
+        
+        // Clear pending withdrawal (set to 0 instead of delete for encrypted types)
+        _pendingWithdrawals[msg.sender] = FHE.asEuint64(0);
 
         // Convert ZLETH to ETH
         uint256 ethAmount = uint256(zlethAmount) * rate();

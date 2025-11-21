@@ -116,9 +116,9 @@ const ZLETH_WRAPPER_ABI = [
   },
   {
     "inputs": [
-      {"internalType": "uint256", "name": "requestID", "type": "uint256"},
+      {"internalType": "address", "name": "to", "type": "address"},
       {"internalType": "uint64", "name": "zlethAmount", "type": "uint64"},
-      {"internalType": "bytes[]", "name": "signatures", "type": "bytes[]"}
+      {"internalType": "bytes", "name": "decryptionProof", "type": "bytes"}
     ],
     "name": "finalizeWithdraw",
     "outputs": [],
@@ -139,7 +139,7 @@ const ZLETH_WRAPPER_ABI = [
     "anonymous": false,
     "inputs": [
       {"indexed": true, "internalType": "address", "name": "user", "type": "address"},
-      {"indexed": false, "internalType": "uint256", "name": "requestId", "type": "uint256"}
+      {"indexed": false, "internalType": "euint64", "name": "encryptedAmount", "type": "bytes32"}
     ],
     "name": "UnwrapRequested",
     "type": "event"

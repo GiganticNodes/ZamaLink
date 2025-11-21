@@ -45,9 +45,10 @@ module.exports = {
     },
   },
   etherscan: {
-    apiKey: {
-      sepolia: ETHERSCAN_API_KEY,
-    },
+    apiKey: ETHERSCAN_API_KEY, // V2 format - single API key
+  },
+  sourcify: {
+    enabled: false, // Disable to hide warnings
   },
   solidity: {
     version: "0.8.24",

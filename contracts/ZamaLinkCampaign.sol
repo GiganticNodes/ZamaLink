@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import { FHE, euint32, euint64, externalEuint64, ebool } from "@fhevm/solidity/lib/FHE.sol";
-import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
+import { ZamaEthereumConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -22,7 +22,7 @@ interface IZLETHWrapper {
  * @notice Private donation campaign platform using ZLETH and Zama FHEVM
  * @dev All donations are private with automatic ETH-ZLETH wrapping
  */
-contract ZamaLinkCampaign is SepoliaConfig, ReentrancyGuard, Pausable, Ownable {
+contract ZamaLinkCampaign is ZamaEthereumConfig, ReentrancyGuard, Pausable, Ownable {
     
     IZLETHWrapper public immutable zlethWrapper;
 
